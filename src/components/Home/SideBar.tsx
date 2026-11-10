@@ -1,6 +1,6 @@
 import { DEFAULT_AVATAR, IMAGE_PROXY } from "../../shared/constants";
 import { FC, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "@tanstack/react-router";
 import { collection, orderBy, query, where } from "firebase/firestore";
 
 import ClickAwayListener from "../ClickAwayListener";
@@ -32,13 +32,13 @@ const SideBar: FC = () => {
     )
   );
 
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
     <>
       <div
         className={`border-dark-lighten h-screen shrink-0 overflow-y-auto overflow-x-hidden border-r ${
-          location.pathname !== "/"
+          pathname !== "/"
             ? "hidden w-[350px] md:block!"
             : "w-full md:w-[350px]!"
         }`}

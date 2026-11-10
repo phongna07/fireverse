@@ -16,7 +16,7 @@ import RightMessage from "../Message/RightMessage";
 import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
 
 interface ChatViewProps {
@@ -32,7 +32,7 @@ const ChatView: FC<ChatViewProps> = ({
   replyInfo,
   setReplyInfo,
 }) => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const currentUser = useStore((state) => state.currentUser);
 

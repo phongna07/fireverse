@@ -1,7 +1,8 @@
 import { ConversationInfo, SavedUser } from "../../shared/types";
 import { FC, useState } from "react";
 import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
+import { useConversationId } from "../../hooks/useConversationId";
 
 import Alert from "../Alert";
 import { IMAGE_PROXY } from "../../shared/constants";
@@ -15,7 +16,7 @@ interface MembersProps {
 }
 
 const Members: FC<MembersProps> = ({ conversation }) => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const currentUser = useStore((state) => state.currentUser);
 
@@ -42,7 +43,7 @@ const Members: FC<MembersProps> = ({ conversation }) => {
       });
 
       if (currentUser?.uid === uid) {
-        navigate("/");
+        navigate({ to: "/" });
       }
     }
   };

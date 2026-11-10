@@ -3,7 +3,7 @@ import { doc, updateDoc } from "firebase/firestore";
 
 import { REACTIONS_UI } from "../../shared/constants";
 import { db } from "../../shared/firebase";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
 
 interface ReactionPopupProps {
@@ -21,7 +21,7 @@ const ReactionPopup: FC<ReactionPopupProps> = ({
   messageId,
   currentReaction,
 }) => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const currentUser = useStore((state) => state.currentUser);
 

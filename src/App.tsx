@@ -1,14 +1,11 @@
 import { FC, useEffect } from "react";
-import { Route, Routes } from "react-router-dom";
 import { auth, db } from "./shared/firebase";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import { BarWave } from "./components/Loading";
-import Chat from "./pages/Chat";
-import Home from "./pages/Home";
-import PrivateRoute from "./components/PrivateRoute";
-import SignIn from "./pages/SignIn";
+import { RouterProvider } from "@tanstack/react-router";
 import { onAuthStateChanged } from "firebase/auth";
+import { router } from "./router";
 import { useStore } from "./store";
 
 const App: FC = () => {
@@ -31,6 +28,11 @@ const App: FC = () => {
     });
   }, []);
 
+  // Re-run the route guards whenever the signed-in user changes
+  useEffect(() => {
+    if (typeof currentUser !== "undefined") router.invalidate();
+  }, [currentUser]);
+
   if (typeof currentUser === "undefined")
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -38,27 +40,7 @@ const App: FC = () => {
       </div>
     );
 
-  return (
-    <Routes>
-      <Route
-        index
-        element={
-          <PrivateRoute>
-            <Home />
-          </PrivateRoute>
-        }
-      />
-      <Route path="sign-in" element={<SignIn />} />
-      <Route
-        path=":id"
-        element={
-          <PrivateRoute>
-            <Chat />
-          </PrivateRoute>
-        }
-      />
-    </Routes>
-  );
+  return <RouterProvider router={router} context={{ user: currentUser }} />;
 };
 
 export default App;

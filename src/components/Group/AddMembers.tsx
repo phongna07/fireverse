@@ -13,14 +13,14 @@ import { IMAGE_PROXY } from "../../shared/constants";
 import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 
 interface AddMembersProps {
   conversations: ConversationInfo;
 }
 
 const AddMembers: FC<AddMembersProps> = ({ conversations }) => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const { data, loading, error } = useCollectionQuery(
     `all-users-except-${JSON.stringify(conversations.users)}`,

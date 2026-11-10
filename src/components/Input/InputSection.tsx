@@ -29,7 +29,7 @@ import { Spinner as Spin } from "../Loading";
 import StickerIcon from "../Icon/StickerIcon";
 import StickerPicker from "./StickerPicker";
 import { formatFileName } from "../../shared/utils";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
 
 const Picker = lazy(() => import("./EmojiPicker"));
@@ -60,7 +60,7 @@ const InputSection: FC<InputSectionProps> = ({
   const [isAlertOpened, setIsAlertOpened] = useState(false);
   const [alertText, setAlertText] = useState("");
 
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
   const currentUser = useStore((state) => state.currentUser);
 
   const textInputRef = useRef<HTMLInputElement>(null);

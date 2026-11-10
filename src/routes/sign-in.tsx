@@ -7,16 +7,10 @@ import {
 import { FC, useState } from "react";
 
 import Alert from "../components/Alert";
-import { Navigate } from "react-router-dom";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { auth } from "../shared/firebase";
-import { useQueryParams } from "../hooks/useQueryParams";
-import { useStore } from "../store";
 
 const SignIn: FC = () => {
-  const { redirect } = useQueryParams();
-
-  const currentUser = useStore((state) => state.currentUser);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isAlertOpened, setIsAlertOpened] = useState(false);
@@ -36,8 +30,6 @@ const SignIn: FC = () => {
         setLoading(false);
       });
   };
-
-  if (currentUser) return <Navigate to={redirect || "/"} />;
 
   return (
     <>
@@ -107,4 +99,14 @@ const SignIn: FC = () => {
   );
 };
 
-export default SignIn;
+const isInternalPath = (value: unknown): value is string =>
+  typeof value === "string" && /^\/(?![\/\\])/.test(value);
+
+export const Route = createFileRoute("/sign-in")({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } =>
+    isInternalPath(search.redirect) ? { redirect: search.redirect } : {},
+  beforeLoad: ({ context, search }) => {
+    if (context.user) throw redirect({ to: search.redirect || "/" });
+  },
+  component: SignIn,
+});

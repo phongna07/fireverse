@@ -17,7 +17,7 @@ import ReplyBadge from "../Chat/ReplyBadge";
 import ReplyIcon from "../Icon/ReplyIcon";
 import SpriteRenderer from "../SpriteRenderer";
 import { db } from "../../shared/firebase";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
 
 interface RightMessageProps {
@@ -29,7 +29,7 @@ interface RightMessageProps {
 const RightMessage: FC<RightMessageProps> = ({ message, setReplyInfo }) => {
   const [isSelectReactionOpened, setIsSelectReactionOpened] = useState(false);
 
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const currentUser = useStore((state) => state.currentUser);
 

@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { ConversationInfo } from "../../shared/types";
 import ConversationSettings from "./ConversationSettings";
 import { IMAGE_PROXY } from "../../shared/constants";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import Skeleton from "../Skeleton";
 import ViewGroup from "../Group/ViewGroup";
 import ViewMedia from "../Media/ViewMedia";

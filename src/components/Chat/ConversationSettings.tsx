@@ -2,7 +2,8 @@ import { ChangeEvent, FC, FormEvent, useRef, useState } from "react";
 import { arrayRemove, doc, updateDoc } from "firebase/firestore";
 import { db, storage } from "../../shared/firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
+import { useConversationId } from "../../hooks/useConversationId";
 
 import Alert from "../Alert";
 import { ConversationInfo } from "../../shared/types";
@@ -21,7 +22,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
   setIsOpened,
   setMediaViewOpened,
 }) => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const currentUser = useStore((state) => state.currentUser);
 
@@ -93,7 +94,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
       "group.groupName": conversation.group?.groupName,
     });
 
-    navigate("/");
+    navigate({ to: "/" });
   };
 
   return (

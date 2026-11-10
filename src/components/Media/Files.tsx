@@ -6,10 +6,10 @@ import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { formatFileSize } from "../../shared/utils";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 
 const Files: FC = () => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const { data, loading, error } = useCollectionQuery(
     `files-${conversationId}`,

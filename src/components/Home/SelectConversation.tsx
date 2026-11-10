@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "@tanstack/react-router";
 
 import { ConversationInfo } from "../../shared/types";
 import { FC } from "react";
@@ -22,7 +22,10 @@ const SelectConversation: FC<SelectConversationProps> = ({
 
   const filtered = users?.filter((user) => user.id !== currentUser?.uid);
 
-  const { id } = useParams();
+  const id = useParams({
+    strict: false,
+    select: (params) => params.conversationId,
+  });
 
   const {
     data: lastMessage,
@@ -44,7 +47,8 @@ const SelectConversation: FC<SelectConversationProps> = ({
   if (conversation.users.length === 2)
     return (
       <Link
-        to={`/${conversationId}`}
+        to="/$conversationId"
+        params={{ conversationId }}
         className={`hover:bg-dark-lighten relative flex items-stretch gap-2 py-2 px-5 transition duration-300 ${
           conversationId === id ? "bg-[#263342]!" : ""
         }`}
@@ -80,7 +84,8 @@ const SelectConversation: FC<SelectConversationProps> = ({
 
   return (
     <Link
-      to={`/${conversationId}`}
+      to="/$conversationId"
+        params={{ conversationId }}
       className={`hover:bg-dark-lighten group relative flex items-stretch gap-2 py-2 px-5 transition duration-300 ${
         conversationId === id ? "bg-[#252F3C]!" : ""
       }`}

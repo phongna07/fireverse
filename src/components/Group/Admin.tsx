@@ -5,7 +5,7 @@ import { arrayRemove, doc, updateDoc } from "firebase/firestore";
 import { IMAGE_PROXY } from "../../shared/constants";
 import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
 import { useUsersInfo } from "../../hooks/useUsersInfo";
 
@@ -14,7 +14,7 @@ interface AdminProps {
 }
 
 const Admin: FC<AdminProps> = ({ conversation }) => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const currentUser = useStore((state) => state.currentUser);
 

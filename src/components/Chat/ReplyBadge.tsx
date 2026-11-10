@@ -4,14 +4,14 @@ import Alert from "../Alert";
 import { db } from "../../shared/firebase";
 import { doc } from "firebase/firestore";
 import { useDocumentQuery } from "../../hooks/useDocumentQuery";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 
 interface ReplyBadgeProps {
   messageId: string;
 }
 
 const ReplyBadge: FC<ReplyBadgeProps> = ({ messageId }) => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const [isAlertOpened, setIsAlertOpened] = useState(false);
 

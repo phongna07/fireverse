@@ -13,7 +13,7 @@ import {
 import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import { useStore } from "../../store";
 
 interface CreateConversationProps {
@@ -78,11 +78,17 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
 
       setIsOpened(false);
 
-      navigate(`/${created.id}`);
+      navigate({
+        to: "/$conversationId",
+        params: { conversationId: created.id },
+      });
     } else {
       setIsOpened(false);
 
-      navigate(`/${querySnapshot.docs[0].id}`);
+      navigate({
+        to: "/$conversationId",
+        params: { conversationId: querySnapshot.docs[0].id },
+      });
 
       setIsCreating(false);
     }

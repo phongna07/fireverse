@@ -1,18 +1,17 @@
 import { FC, useEffect, useState } from "react";
 
-import ChatHeader from "../components/Chat/ChatHeader";
-import ChatView from "../components/Chat/ChatView";
-import { ConversationInfo } from "../shared/types";
-import InputSection from "../components/Input/InputSection";
-import SideBar from "../components/Home/SideBar";
-import { db } from "../shared/firebase";
+import ChatHeader from "../../components/Chat/ChatHeader";
+import ChatView from "../../components/Chat/ChatView";
+import { ConversationInfo } from "../../shared/types";
+import InputSection from "../../components/Input/InputSection";
+import { db } from "../../shared/firebase";
 import { doc } from "firebase/firestore";
-import { useDocumentQuery } from "../hooks/useDocumentQuery";
-import { useParams } from "react-router-dom";
-import { useStore } from "../store";
+import { useDocumentQuery } from "../../hooks/useDocumentQuery";
+import { createFileRoute } from "@tanstack/react-router";
+import { useStore } from "../../store";
 
 const Chat: FC = () => {
-  const { id } = useParams();
+  const { conversationId: id } = Route.useParams();
 
   const { data, loading, error } = useDocumentQuery(
     `conversation-${id}`,
@@ -33,10 +32,7 @@ const Chat: FC = () => {
   }, [conversation?.theme || ""]);
 
   return (
-    <div className="flex">
-      <SideBar />
-
-      <div className="flex h-screen grow flex-col items-stretch">
+      <div className="flex h-screen min-w-0 grow flex-col items-stretch">
         {loading ? (
           <>
             <div className="border-dark-lighten h-20 border-b"></div>
@@ -68,8 +64,9 @@ const Chat: FC = () => {
           </>
         )}
       </div>
-    </div>
   );
 };
 
-export default Chat;
+export const Route = createFileRoute("/_auth/$conversationId")({
+  component: Chat,
+});

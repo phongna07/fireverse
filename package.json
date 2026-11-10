@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
+    "@tanstack/react-router": "^1.170.46",
     "boxicons": "^2.1.4",
     "dayjs": "^1.11.23",
     "emoji-mart": "^5.6.0",
@@ -16,13 +17,13 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-infinite-scroll-component": "^7.2.1",
-    "react-router-dom": "^6.30.6",
     "zustand": "^5.1.0"
   },
   "private": true,
   "type": "module",
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",
+    "@tanstack/router-plugin": "^1.169.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",

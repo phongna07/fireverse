@@ -5,7 +5,7 @@ import ImageView from "../ImageView";
 import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
-import { useParams } from "react-router-dom";
+import { useConversationId } from "../../hooks/useConversationId";
 
 const ImageItem: FC<{ src: string }> = ({ src }) => {
   const [isImageViewOpened, setIsImageViewOpened] = useState(false);
@@ -28,7 +28,7 @@ const ImageItem: FC<{ src: string }> = ({ src }) => {
 };
 
 const Image: FC = () => {
-  const { id: conversationId } = useParams();
+  const conversationId = useConversationId();
 
   const { data, loading, error } = useCollectionQuery(
     `images-${conversationId}`,
