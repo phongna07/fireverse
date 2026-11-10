@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 import { collection, orderBy, query, where } from "firebase/firestore";
 
 import ImageView from "../ImageView";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import { useParams } from "react-router-dom";

@@ -1,7 +1,7 @@
 import { FC, useRef, useState } from "react";
 
 import ClickAwayListener from "../ClickAwayListener";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import configs from "../../shared/configs";
 import { useFetch } from "../../hooks/useFetch";
 
@@ -41,24 +41,24 @@ const GifPicker: FC<GifPickerProps> = ({ setIsOpened, onSelect }) => {
                 }, 500);
               }}
               type="text"
-              className="bg-dark-lighten w-full rounded-full py-2 pl-10 pr-4 outline-none"
+              className="bg-dark-lighten w-full rounded-full py-2 pl-10 pr-4 outline-hidden"
               placeholder="Search..."
             />
             <i className="bx bx-search absolute top-1/2 left-3 -translate-y-1/2 text-xl"></i>
           </div>
 
           {loading ? (
-            <div className="flex flex-grow items-center justify-center">
+            <div className="flex grow items-center justify-center">
               <Spin />
             </div>
           ) : error ? (
-            <div className="flex flex-grow flex-col items-center justify-center">
+            <div className="flex grow flex-col items-center justify-center">
               <p className="text-center">
                 Sorry... Giphy has limited the request
               </p>
             </div>
           ) : (
-            <div className="mt-3 flex flex-grow flex-wrap gap-2 overflow-y-auto">
+            <div className="mt-3 flex grow flex-wrap gap-2 overflow-y-auto">
               {(data as any).data.map((item: any) => (
                 <img
                   key={item.id}

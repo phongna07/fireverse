@@ -10,7 +10,7 @@ import {
   where,
 } from "firebase/firestore";
 
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import { useNavigate } from "react-router-dom";
@@ -115,7 +115,7 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
         </div>
         {loading ? (
           <div className="flex h-96 items-center justify-center">
-            <Spin color="#0D90F3" />
+            <Spin />
           </div>
         ) : error ? (
           <div className="flex h-96 items-center justify-center">
@@ -125,7 +125,7 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
           <>
             {isCreating && (
               <div className="absolute top-0 left-0 z-20 flex h-full w-full items-center justify-center bg-[#00000080]">
-                <Spin color="#0D90F3" />
+                <Spin />
               </div>
             )}
             <div className="flex h-96 flex-col items-stretch gap-2 overflow-y-auto py-2">
@@ -138,13 +138,13 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
                     className="hover:bg-dark-lighten flex cursor-pointer items-center gap-2 px-5 py-2 transition"
                   >
                     <input
-                      className="flex-shrink-0 cursor-pointer"
+                      className="shrink-0 cursor-pointer"
                       type="checkbox"
                       checked={selected.includes(doc.data().uid)}
                       readOnly
                     />
                     <img
-                      className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
+                      className="h-8 w-8 shrink-0 rounded-full object-cover"
                       src={IMAGE_PROXY(doc.data().photoURL)}
                       alt=""
                     />
@@ -156,7 +156,7 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
               <button
                 disabled={selected.length === 0}
                 onClick={handleCreateConversation}
-                className="bg-dark-lighten rounded-lg py-2 px-3 transition duration-300 hover:brightness-125 disabled:!brightness-[80%]"
+                className="bg-dark-lighten rounded-lg py-2 px-3 transition duration-300 hover:brightness-125 disabled:brightness-80!"
               >
                 Start conversation
               </button>

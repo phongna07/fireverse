@@ -25,7 +25,7 @@ import { EMOJI_REPLACEMENT } from "../../shared/constants";
 import GifIcon from "../Icon/GifIcon";
 import GifPicker from "./GifPicker";
 import ReplyIcon from "../Icon/ReplyIcon";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import StickerIcon from "../Icon/StickerIcon";
 import StickerPicker from "./StickerPicker";
 import { formatFileName } from "../../shared/utils";
@@ -322,7 +322,7 @@ const InputSection: FC<InputSectionProps> = ({
   return (
     <>
       {fileDragging && (
-        <div className="pointer-events-none fixed top-0 left-0 z-20 flex h-full w-full select-none items-center justify-center backdrop-blur-sm">
+        <div className="pointer-events-none fixed top-0 left-0 z-20 flex h-full w-full select-none items-center justify-center backdrop-blur-xs">
           <h1 className="text-3xl">Drop file to send</h1>
         </div>
       )}
@@ -382,7 +382,7 @@ const InputSection: FC<InputSectionProps> = ({
       >
         <button
           onClick={() => imageInputRef.current?.click()}
-          className="text-primary flex flex-shrink-0 items-center text-2xl"
+          className="text-primary flex shrink-0 items-center text-2xl"
         >
           <i className="bx bxs-image-add"></i>
         </button>
@@ -396,7 +396,7 @@ const InputSection: FC<InputSectionProps> = ({
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="text-primary flex flex-shrink-0 items-center text-2xl"
+          className="text-primary flex shrink-0 items-center text-2xl"
         >
           <i className="bx bx-link-alt"></i>
         </button>
@@ -407,7 +407,7 @@ const InputSection: FC<InputSectionProps> = ({
           type="file"
           onChange={handleFileInputChange}
         />
-        <div className="relative flex flex-shrink-0 items-center">
+        <div className="relative flex shrink-0 items-center">
           {isStickerPickerOpened && (
             <StickerPicker
               setIsOpened={setIsStickerPickerOpened}
@@ -423,7 +423,7 @@ const InputSection: FC<InputSectionProps> = ({
           </button>
         </div>
 
-        <div className="relative flex flex-shrink-0 items-center">
+        <div className="relative flex shrink-0 items-center">
           {isGifPickerOpened && (
             <GifPicker setIsOpened={setIsGifPickerOpened} onSelect={sendGif} />
           )}
@@ -438,9 +438,9 @@ const InputSection: FC<InputSectionProps> = ({
 
         <form
           onSubmit={handleFormSubmit}
-          className="flex flex-grow items-stretch gap-1"
+          className="flex grow items-stretch gap-1"
         >
-          <div className="relative flex flex-grow items-center">
+          <div className="relative flex grow items-center">
             <input
               maxLength={1000}
               disabled={disabled}
@@ -451,7 +451,7 @@ const InputSection: FC<InputSectionProps> = ({
               }}
               onKeyDown={handleReplaceEmoji}
               onPaste={handlePaste}
-              className="bg-dark-lighten h-9 w-full rounded-full pl-3 pr-10 outline-none"
+              className="bg-dark-lighten h-9 w-full rounded-full pl-3 pr-10 outline-hidden"
               type="text"
               placeholder="Message..."
             />
@@ -487,10 +487,10 @@ const InputSection: FC<InputSectionProps> = ({
           </div>
           {fileUploading ? (
             <div className="ml-1 flex items-center">
-              <Spin width="24px" height="24px" color="#0D90F3" />
+              <Spin size={24} />
             </div>
           ) : (
-            <button className="text-primary flex flex-shrink-0 items-center text-2xl">
+            <button className="text-primary flex shrink-0 items-center text-2xl">
               <i className="bx bxs-send"></i>
             </button>
           )}

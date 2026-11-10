@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 import { collection, orderBy, query, where } from "firebase/firestore";
 
 import FileIcon from "../FileIcon";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { formatFileSize } from "../../shared/utils";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
@@ -42,7 +42,7 @@ const Files: FC = () => {
             className="h-6 w-6 object-cover"
             extension={file.data().file.name.split(".").slice(-1)[0]}
           />
-          <div className="flex-grow">
+          <div className="grow">
             <h1>{file.data()?.file?.name}</h1>
             <p>{formatFileSize(file.data()?.file?.size)}</p>
           </div>
@@ -50,7 +50,7 @@ const Files: FC = () => {
             href={file.data().content}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-shrink-0"
+            className="shrink-0"
           >
             <i className="bx bxs-download text-2xl"></i>
           </a>

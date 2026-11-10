@@ -13,7 +13,7 @@ import AvatarFromId from "./AvatarFromId";
 import InfiniteScroll from "react-infinite-scroll-component";
 import LeftMessage from "../Message/LeftMessage";
 import RightMessage from "../Message/RightMessage";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import { useParams } from "react-router-dom";
@@ -99,27 +99,27 @@ const ChatView: FC<ChatViewProps> = ({
 
     return () => {
       removeEventListener("focus", focusHandler);
-      removeEventListener("blur", blurHandler);
+      removeEventListener("blur-sm", blurHandler);
     };
   }, []);
 
   if (loading)
     return (
-      <div className="flex flex-grow items-center justify-center">
+      <div className="flex grow items-center justify-center">
         <Spin />
       </div>
     );
 
   if (error)
     return (
-      <div className="flex-grow">
+      <div className="grow">
         <p className="mt-4 text-center text-gray-400">Something went wrong</p>
       </div>
     );
 
   if (data?.empty)
     return (
-      <div className="flex-grow">
+      <div className="grow">
         <p className="mt-4 text-center text-gray-400">
           No message recently. Start chatting now.
         </p>
@@ -164,7 +164,7 @@ const ChatView: FC<ChatViewProps> = ({
               {Object.entries(conversation.seen).filter(
                 ([key, value]) => key !== currentUser?.uid && value === item.id
               ).length > 0 && (
-                <div className="flex justify-end gap-[1px] px-8">
+                <div className="flex justify-end gap-px px-8">
                   {Object.entries(conversation.seen)
                     .filter(
                       ([key, value]) =>

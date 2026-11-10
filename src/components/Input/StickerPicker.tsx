@@ -2,7 +2,7 @@ import { FC, Fragment, useState } from "react";
 
 import ClickAwayListener from "../ClickAwayListener";
 import { STICKERS_URL } from "../../shared/constants";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import SpriteRenderer from "../SpriteRenderer";
 import { StickerCollections } from "../../shared/types";
 import { useFetch } from "../../hooks/useFetch";
@@ -51,7 +51,7 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
             </div>
           ) : (
             <div className="flex h-full w-full flex-col">
-              <div className="flex-grow overflow-y-auto p-3 pt-1">
+              <div className="grow overflow-y-auto p-3 pt-1">
                 {recentStickers.length > 0 && (
                   <>
                     <h1 className="mt-2" id="sticker-recent">
@@ -100,7 +100,7 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
                 ))}
               </div>
 
-              <div className="h-18 border-t-dark-lighten flex w-full flex-shrink-0 gap-2 overflow-x-auto border-t p-2">
+              <div className="h-18 border-t-dark-lighten flex w-full shrink-0 gap-2 overflow-x-auto border-t p-2">
                 {recentStickers.length > 0 && (
                   <button
                     onClick={() =>

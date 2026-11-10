@@ -1,4 +1,8 @@
-import { enableIndexedDbPersistence, getFirestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
 
 import configs from "./configs";
 import { getAuth } from "firebase/auth";
@@ -8,7 +12,9 @@ import { initializeApp } from "firebase/app";
 const firebaseApp = initializeApp(JSON.parse(configs.firebaseConfig));
 
 export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
+export const db = initializeFirestore(firebaseApp, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
+});
 export const storage = getStorage(firebaseApp);
-
-enableIndexedDbPersistence(db, { forceOwnership: false });

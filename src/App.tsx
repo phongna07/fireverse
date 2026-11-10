@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { auth, db } from "./shared/firebase";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 
-import BarWave from "react-cssfx-loading/src/BarWave";
+import { BarWave } from "./components/Loading";
 import Chat from "./pages/Chat";
 import Home from "./pages/Home";
 import PrivateRoute from "./components/PrivateRoute";

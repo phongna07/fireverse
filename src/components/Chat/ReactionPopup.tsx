@@ -37,7 +37,7 @@ const ReactionPopup: FC<ReactionPopupProps> = ({
   return (
     <div
       ref={forwardedRef}
-      className={`bg-dark-lighten animate-fade-in absolute bottom-[calc(100%+5px)] z-[1] flex gap-1 rounded-full p-[6px] shadow ${
+      className={`bg-dark-lighten animate-fade-in absolute bottom-[calc(100%+5px)] z-1 flex gap-1 rounded-full p-[6px] shadow ${
         position === "left" ? "left-8" : "right-8"
       }`}
     >

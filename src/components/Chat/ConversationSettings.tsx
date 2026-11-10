@@ -142,16 +142,16 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
               </button>
               {isChangeChatNameOpened && (
                 <form onSubmit={handleFormSubmit} className="my-2 flex gap-3">
-                  <div className="flex-grow">
+                  <div className="grow">
                     <input
                       value={chatNameInputValue}
                       onChange={(e) => setChatNameInputValue(e.target.value)}
-                      className="border-dark-lighten bg-dark h-full w-full rounded-lg border p-2 outline-none transition duration-300 focus:border-gray-500"
+                      className="border-dark-lighten bg-dark h-full w-full rounded-lg border p-2 outline-hidden transition duration-300 focus:border-gray-500"
                       type="text"
                       placeholder="Chat name"
                     />
                   </div>
-                  <button className="bg-primary flex-shrink-0 rounded px-3 transition duration-300 hover:brightness-110">
+                  <button className="bg-primary shrink-0 rounded-sm px-3 transition duration-300 hover:brightness-110">
                     Change
                   </button>
                 </form>

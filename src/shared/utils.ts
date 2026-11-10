@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
-// @ts-ignore
-import kebabCase from "lodash.kebabcase";
+
+const kebabCase = (value: string) =>
+  (value.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]+|[0-9]+/g) || [])
+    .map((word) => word.toLowerCase())
+    .join("-");
 
 export const formatFileName = (name: string) => {
   const splitted = name.split(".");

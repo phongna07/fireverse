@@ -10,7 +10,7 @@ import {
 
 import { FC } from "react";
 import { IMAGE_PROXY } from "../../shared/constants";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import { db } from "../../shared/firebase";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import { useParams } from "react-router-dom";
@@ -50,11 +50,11 @@ const AddMembers: FC<AddMembersProps> = ({ conversations }) => {
         .map((user) => (
           <div key={user.uid} className="flex items-center gap-3 px-4">
             <img
-              className="h-10 w-10 flex-shrink-0 rounded-full object-cover"
+              className="h-10 w-10 shrink-0 rounded-full object-cover"
               src={IMAGE_PROXY(user.photoURL)}
               alt=""
             />
-            <div className="flex-grow">
+            <div className="grow">
               <h1>{user.displayName}</h1>
             </div>
             <button onClick={() => handleAddMember(user.uid)}>

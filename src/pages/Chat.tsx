@@ -36,11 +36,11 @@ const Chat: FC = () => {
     <div className="flex">
       <SideBar />
 
-      <div className="flex h-screen flex-grow flex-col items-stretch">
+      <div className="flex h-screen grow flex-col items-stretch">
         {loading ? (
           <>
             <div className="border-dark-lighten h-20 border-b"></div>
-            <div className="flex-grow"></div>
+            <div className="grow"></div>
             <InputSection disabled />
           </>
         ) : !conversation ||

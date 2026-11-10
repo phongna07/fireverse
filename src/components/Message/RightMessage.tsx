@@ -111,7 +111,7 @@ const RightMessage: FC<RightMessageProps> = ({ message, setReplyInfo }) => {
                 e.stopPropagation();
               }}
               title={formattedDate}
-              className="max-w-[60%] cursor-pointer transition duration-300 hover:brightness-[85%]"
+              className="max-w-[60%] cursor-pointer transition duration-300 hover:brightness-85"
               src={message.content}
               alt=""
             />

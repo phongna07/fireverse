@@ -15,7 +15,8 @@ Official Website: [https://fireverse.pages.dev](https://fireverse.pages.dev)
 
 ## Main technology used
 
-- react, typescript, tailwind
+- react 19, typescript, tailwind 4, vite
+- tanstack router
 - firebase (auth, firestore, storage)
 - zustand
 - emoji-mart
@@ -29,7 +30,7 @@ Official Website: [https://fireverse.pages.dev](https://fireverse.pages.dev)
   - Image
   - File
   - Stickers (from zalo)
-  - Gif (from giph
+  - Gif (from giphy)
   - Emoji (emoji-mart)
 - Show if user has seen message
 - Drop file to upload
@@ -50,14 +51,18 @@ Official Website: [https://fireverse.pages.dev](https://fireverse.pages.dev)
 - Create your own firebase project
   - Enable auth (google, facebook)
   - Enable cloud firestore
-  - Enable firebase storage
+  - (Optional) Enable firebase storage, only needed if you turn uploads on
 - Create your own giphy developer account
 - Example .env file:
 
 ```env
 VITE_FIREBASE_CONFIG={"apiKey":"","authDomain":"","projectId":"","storageBucket":"","messagingSenderId":"","appId":""}
 VITE_GIPHY_API_KEY=your_api_key
+# Optional: image/file upload needs Firebase Storage (Blaze plan). Off by default.
+VITE_ENABLE_UPLOADS=false
 ```
+
+- Run `npm run dev` to start the dev server, `npm run build` for a production build
 
 ## Previews
 

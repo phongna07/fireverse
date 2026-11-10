@@ -2,7 +2,7 @@ import { FC, useState } from "react";
 import { IMAGE_PROXY, REACTIONS_UI } from "../../shared/constants";
 
 import { MessageItem } from "../../shared/types";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import { useUsersInfo } from "../../hooks/useUsersInfo";
 
 interface ReactionStatusProps {
@@ -65,7 +65,7 @@ const ReactionStatus: FC<ReactionStatusProps> = ({ message, position }) => {
             onClick={(e) => e.stopPropagation()}
             className="bg-dark flex h-96 w-screen max-w-[400px] flex-col rounded-lg"
           >
-            <div className="border-dark-lighten flex flex-shrink-0 items-center border-b p-4">
+            <div className="border-dark-lighten flex shrink-0 items-center border-b p-4">
               <div className="flex-1"></div>
               <div className="flex-1">
                 <h1 className="text-center text-2xl">Reactions</h1>
@@ -81,11 +81,11 @@ const ReactionStatus: FC<ReactionStatusProps> = ({ message, position }) => {
             </div>
 
             {loading || error ? (
-              <div className="flex flex-grow items-center justify-center">
+              <div className="flex grow items-center justify-center">
                 <Spin />
               </div>
             ) : (
-              <div className="flex-grow overflow-y-auto overflow-x-hidden">
+              <div className="grow overflow-y-auto overflow-x-hidden">
                 {Object.entries(message.reactions)
                   .filter(([key, value]) => value)
                   .map(([key, value]) => (

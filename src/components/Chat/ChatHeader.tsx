@@ -28,7 +28,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
   return (
     <>
       <div className="border-dark-lighten flex h-20 items-center justify-between border-b px-5">
-        <div className="flex flex-grow items-center gap-3">
+        <div className="flex grow items-center gap-3">
           <Link to="/" className="md:hidden">
             <i className="bx bxs-chevron-left text-primary text-3xl"></i>
           </Link>
@@ -46,19 +46,19 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
                 <>
                   {conversation?.group?.groupImage ? (
                     <img
-                      className="h-10 w-10 flex-shrink-0 rounded-full object-cover"
+                      className="h-10 w-10 shrink-0 rounded-full object-cover"
                       src={conversation.group.groupImage}
                       alt=""
                     />
                   ) : (
-                    <div className="relative h-10 w-10 flex-shrink-0">
+                    <div className="relative h-10 w-10 shrink-0">
                       <img
-                        className="absolute top-0 right-0 h-7 w-7 flex-shrink-0 rounded-full object-cover"
+                        className="absolute top-0 right-0 h-7 w-7 shrink-0 rounded-full object-cover"
                         src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
                         alt=""
                       />
                       <img
-                        className={`border-dark absolute bottom-0 left-0 z-[1] h-7 w-7 flex-shrink-0 rounded-full border-2 object-cover transition duration-300`}
+                        className={`border-dark absolute bottom-0 left-0 z-1 h-7 w-7 shrink-0 rounded-full border-2 object-cover transition duration-300`}
                         src={IMAGE_PROXY(filtered?.[1]?.data()?.photoURL)}
                         alt=""
                       />

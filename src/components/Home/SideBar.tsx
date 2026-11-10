@@ -7,7 +7,7 @@ import ClickAwayListener from "../ClickAwayListener";
 import { ConversationInfo } from "../../shared/types";
 import CreateConversation from "./CreateConversation";
 import SelectConversation from "./SelectConversation";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import UserInfo from "./UserInfo";
 import { auth } from "../../shared/firebase";
 import { db } from "../../shared/firebase";
@@ -37,10 +37,10 @@ const SideBar: FC = () => {
   return (
     <>
       <div
-        className={`border-dark-lighten h-screen flex-shrink-0 overflow-y-auto overflow-x-hidden border-r ${
+        className={`border-dark-lighten h-screen shrink-0 overflow-y-auto overflow-x-hidden border-r ${
           location.pathname !== "/"
-            ? "hidden w-[350px] md:!block"
-            : "w-full md:!w-[350px]"
+            ? "hidden w-[350px] md:block!"
+            : "w-full md:w-[350px]!"
         }`}
       >
         <div className="border-dark-lighten flex h-20 items-center justify-between border-b px-6">

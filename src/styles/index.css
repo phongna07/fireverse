@@ -1,6 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --animate-fade-in: fade-in 0.3s forwards;
+
+  --color-dark: #242526;
+  --color-dark-lighten: #3a3b3c;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@theme inline {
+  --color-primary: var(--primary-color);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 body {
   @apply bg-dark text-gray-100;
@@ -9,7 +45,7 @@ body {
 
 input[type="checkbox"] {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
-  @apply appearance-none outline-none w-4 h-4 rounded bg-white transition-all duration-300 checked:bg-primary;
+  @apply appearance-none outline-hidden w-4 h-4 rounded-sm bg-white transition-all duration-300 checked:bg-primary;
 }
 
 .check-overlay {
@@ -37,4 +73,46 @@ input[type="checkbox"] {
 }
 ::-webkit-scrollbar-button {
   @apply hidden;
+}
+
+.spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 3px solid currentColor;
+  border-top-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+
+.bar-wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 35px;
+}
+.bar-wave > span {
+  width: 6px;
+  height: 100%;
+  border-radius: 2px;
+  background: currentColor;
+  animation: bar-wave 1s ease-in-out infinite;
+}
+.bar-wave > span:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.bar-wave > span:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.bar-wave > span:nth-child(4) {
+  animation-delay: 0.3s;
+}
+
+@keyframes bar-wave {
+  0%,
+  100% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1);
+  }
 }
