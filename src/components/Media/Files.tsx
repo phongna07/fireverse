@@ -1,9 +1,9 @@
-import { FC, useState } from "react";
-import { collection, orderBy, query, where } from "firebase/firestore";
+import { messagesCollection } from "../../shared/collections";
+import { FC } from "react";
+import { orderBy, query, where } from "firebase/firestore";
 
 import FileIcon from "../FileIcon";
 import { Spinner as Spin } from "../Loading";
-import { db } from "../../shared/firebase";
 import { formatFileSize } from "../../shared/utils";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import { useConversationId } from "../../hooks/useConversationId";
@@ -11,16 +11,23 @@ import { useConversationId } from "../../hooks/useConversationId";
 const Files: FC = () => {
   const conversationId = useConversationId();
 
-  const { data, loading, error } = useCollectionQuery(
+  const { data, loading, error, retry } = useCollectionQuery(
     `files-${conversationId}`,
     query(
-      collection(db, "conversations", conversationId as string, "messages"),
+      messagesCollection(conversationId as string),
       where("type", "==", "file"),
-      orderBy("createdAt", "desc")
-    )
+      orderBy("createdAt", "desc"),
+    ),
   );
 
-  if (loading || error)
+  if (error)
+    return (
+      <p className="p-4 text-center">
+        Unable to load files. <button onClick={retry}>Retry</button>
+      </p>
+    );
+
+  if (loading)
     return (
       <div className="flex h-80 items-center justify-center">
         <Spin />
@@ -40,13 +47,14 @@ const Files: FC = () => {
         <div key={file.id} className="flex items-center gap-4 p-2">
           <FileIcon
             className="h-6 w-6 object-cover"
-            extension={file.data().file.name.split(".").slice(-1)[0]}
+            extension={file.data().file?.name.split(".").slice(-1)[0] || ""}
           />
           <div className="grow">
             <h1>{file.data()?.file?.name}</h1>
             <p>{formatFileSize(file.data()?.file?.size)}</p>
           </div>
           <a
+            aria-label="Download file"
             href={file.data().content}
             target="_blank"
             rel="noopener noreferrer"

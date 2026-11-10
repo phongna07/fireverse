@@ -1,8 +1,7 @@
-import { FC, useState } from "react";
+import { messageDoc } from "../../shared/collections";
+import { FC } from "react";
 
-import Alert from "../Alert";
-import { db } from "../../shared/firebase";
-import { doc } from "firebase/firestore";
+import { toast } from "../../store/toast";
 import { useDocumentQuery } from "../../hooks/useDocumentQuery";
 import { useConversationId } from "../../hooks/useConversationId";
 
@@ -13,11 +12,9 @@ interface ReplyBadgeProps {
 const ReplyBadge: FC<ReplyBadgeProps> = ({ messageId }) => {
   const conversationId = useConversationId();
 
-  const [isAlertOpened, setIsAlertOpened] = useState(false);
-
   const { data, loading, error } = useDocumentQuery(
     `message-${messageId}`,
-    doc(db, "conversations", conversationId as string, "messages", messageId)
+    messageDoc(conversationId as string, messageId),
   );
 
   if (loading || error)
@@ -25,11 +22,12 @@ const ReplyBadge: FC<ReplyBadgeProps> = ({ messageId }) => {
 
   return (
     <>
-      <div
+      <button
+        aria-label="Go to original message"
         onClick={() => {
-          const el = document.querySelector(`#message-${messageId}`);
+          const el = document.getElementById(`message-${messageId}`);
           if (el) el.scrollIntoView({ behavior: "smooth" });
-          else setIsAlertOpened(true);
+          else toast.info("Scroll up to load the original message.");
         }}
         className="cursor-pointer rounded-lg bg-[#4E4F50] p-2 opacity-60"
       >
@@ -44,12 +42,7 @@ const ReplyBadge: FC<ReplyBadgeProps> = ({ messageId }) => {
         ) : (
           "Message has been removed"
         )}
-      </div>
-      <Alert
-        isOpened={isAlertOpened}
-        setIsOpened={setIsAlertOpened}
-        text="Cannot find your message. Try to scroll up to load more"
-      />
+      </button>
     </>
   );
 };

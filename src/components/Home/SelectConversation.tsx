@@ -20,22 +20,19 @@ const SelectConversation: FC<SelectConversationProps> = ({
   const { data: users, loading } = useUsersInfo(conversation.users);
   const currentUser = useStore((state) => state.currentUser);
 
-  const filtered = users?.filter((user) => user.id !== currentUser?.uid);
+  const filtered = users?.filter((user) => user.uid !== currentUser?.uid);
 
   const id = useParams({
     strict: false,
     select: (params) => params.conversationId,
   });
 
-  const {
-    data: lastMessage,
-    loading: lastMessageLoading,
-    error: lastMessageError,
-  } = useLastMessage(conversationId);
+  const { data: lastMessage, loading: lastMessageLoading } =
+    useLastMessage(conversationId);
 
   if (loading)
     return (
-      <div className="flex items-stretch gap-2 py-2 px-5">
+      <div className="flex items-stretch gap-2 px-5 py-2">
         <Skeleton className="h-14 w-14 shrink-0 rounded-full" />
         <div className="flex grow flex-col items-start gap-2 py-2">
           <Skeleton className="w-1/2 grow" />
@@ -49,23 +46,25 @@ const SelectConversation: FC<SelectConversationProps> = ({
       <Link
         to="/$conversationId"
         params={{ conversationId }}
-        className={`hover:bg-dark-lighten relative flex items-stretch gap-2 py-2 px-5 transition duration-300 ${
+        className={`relative flex items-stretch gap-2 px-5 py-2 transition duration-300 hover:bg-dark-lighten ${
           conversationId === id ? "bg-[#263342]!" : ""
         }`}
       >
         <img
+          loading="lazy"
+          decoding="async"
           className="h-14 w-14 shrink-0 rounded-full object-cover"
-          src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
+          src={IMAGE_PROXY(filtered?.[0]?.photoURL)}
           alt=""
         />
         <div className="flex grow flex-col items-start gap-1 py-1">
           <p className="max-w-[240px] grow overflow-hidden text-ellipsis whitespace-nowrap">
-            {filtered?.[0].data()?.displayName}
+            {filtered?.[0]?.displayName}
           </p>
           {lastMessageLoading ? (
             <Skeleton className="w-2/3 grow" />
           ) : (
-            <p className="max-w-[240px] grow overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-400">
+            <p className="max-w-[240px] grow overflow-hidden text-sm text-ellipsis whitespace-nowrap text-gray-400">
               {lastMessage?.message}
             </p>
           )}
@@ -75,7 +74,7 @@ const SelectConversation: FC<SelectConversationProps> = ({
             {lastMessage?.lastMessageId !== null &&
               lastMessage?.lastMessageId !==
                 conversation.seen[currentUser?.uid as string] && (
-                <div className="bg-primary absolute top-1/2 right-4 h-[10px] w-[10px] -translate-y-1/2 rounded-full"></div>
+                <div className="absolute top-1/2 right-4 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-primary"></div>
               )}
           </>
         )}
@@ -85,13 +84,15 @@ const SelectConversation: FC<SelectConversationProps> = ({
   return (
     <Link
       to="/$conversationId"
-        params={{ conversationId }}
-      className={`hover:bg-dark-lighten group relative flex items-stretch gap-2 py-2 px-5 transition duration-300 ${
+      params={{ conversationId }}
+      className={`group relative flex items-stretch gap-2 px-5 py-2 transition duration-300 hover:bg-dark-lighten ${
         conversationId === id ? "bg-[#252F3C]!" : ""
       }`}
     >
       {conversation?.group?.groupImage ? (
         <img
+          loading="lazy"
+          decoding="async"
           className="h-14 w-14 shrink-0 rounded-full object-cover"
           src={conversation.group.groupImage}
           alt=""
@@ -99,15 +100,19 @@ const SelectConversation: FC<SelectConversationProps> = ({
       ) : (
         <div className="relative h-14 w-14">
           <img
+            loading="lazy"
+            decoding="async"
             className="absolute top-0 right-0 h-10 w-10 shrink-0 rounded-full object-cover"
-            src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
+            src={IMAGE_PROXY(filtered?.[0]?.photoURL)}
             alt=""
           />
           <img
-            className={`border-dark group-hover:border-dark-lighten absolute bottom-0 left-0 z-1 h-10 w-10 shrink-0 rounded-full border-[3px] object-cover transition duration-300 ${
+            loading="lazy"
+            decoding="async"
+            className={`absolute bottom-0 left-0 z-1 h-10 w-10 shrink-0 rounded-full border-[3px] border-dark object-cover transition duration-300 group-hover:border-dark-lighten ${
               conversationId === id ? "border-[#252F3C]!" : ""
             }`}
-            src={IMAGE_PROXY(filtered?.[1]?.data()?.photoURL)}
+            src={IMAGE_PROXY(filtered?.[1]?.photoURL)}
             alt=""
           />
         </div>
@@ -116,14 +121,14 @@ const SelectConversation: FC<SelectConversationProps> = ({
         <p className="max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap">
           {conversation?.group?.groupName ||
             filtered
-              ?.map((user) => user.data()?.displayName)
+              ?.map((user) => user.displayName)
               .slice(0, 3)
               .join(", ")}
         </p>
         {lastMessageLoading ? (
           <Skeleton className="w-2/3 grow" />
         ) : (
-          <p className="max-w-[240px] grow overflow-hidden text-ellipsis whitespace-nowrap text-sm text-gray-400">
+          <p className="max-w-[240px] grow overflow-hidden text-sm text-ellipsis whitespace-nowrap text-gray-400">
             {lastMessage?.message}
           </p>
         )}
@@ -133,7 +138,7 @@ const SelectConversation: FC<SelectConversationProps> = ({
           {lastMessage?.lastMessageId !== null &&
             lastMessage?.lastMessageId !==
               conversation.seen[currentUser?.uid as string] && (
-              <div className="bg-primary absolute top-1/2 right-4 h-[10px] w-[10px] -translate-y-1/2 rounded-full"></div>
+              <div className="absolute top-1/2 right-4 h-[10px] w-[10px] -translate-y-1/2 rounded-full bg-primary"></div>
             )}
         </>
       )}

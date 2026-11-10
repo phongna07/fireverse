@@ -45,7 +45,7 @@ body {
 
 input[type="checkbox"] {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
-  @apply appearance-none outline-hidden w-4 h-4 rounded-sm bg-white transition-all duration-300 checked:bg-primary;
+  @apply h-4 w-4 appearance-none rounded-sm bg-white outline-hidden transition-all duration-300 checked:bg-primary;
 }
 
 .check-overlay {
@@ -53,19 +53,19 @@ input[type="checkbox"] {
 }
 
 .check-overlay::after {
-  @apply bg-center bg-no-repeat z-10 w-full h-full absolute top-0 left-0;
+  @apply absolute top-0 left-0 z-10 h-full w-full bg-center bg-no-repeat;
   content: "";
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
 }
 
 ::-webkit-scrollbar {
-  @apply w-[10px] h-[10px];
+  @apply h-[10px] w-[10px];
 }
 ::-webkit-scrollbar-track {
   @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[#666] rounded-2xl;
+  @apply rounded-2xl bg-[#666];
   border: 1px solid #191a1f;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -114,5 +114,65 @@ input[type="checkbox"] {
   }
   50% {
     transform: scaleY(1);
+  }
+}
+
+button:not(:disabled),
+[role="button"] {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+:where(button, a, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+}
+.message-action {
+  opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .message-action {
+    opacity: 0;
+  }
+  .group:hover .message-action,
+  .group:focus-within .message-action {
+    opacity: 1;
+  }
+}
+.picker-panel {
+  position: fixed;
+  z-index: 15;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 4.5rem;
+  width: min(24rem, calc(100vw - 1rem));
+  height: min(24rem, calc(100dvh - 6rem));
+}
+.emoji-panel {
+  height: auto;
+  max-height: calc(100dvh - 6rem);
+  overflow: auto;
+}
+@media (min-width: 768px) {
+  .picker-panel {
+    left: 366px;
+    right: auto;
+  }
+  .emoji-panel {
+    left: auto;
+    right: 1rem;
+    width: min(348px, calc(100vw - 1rem));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

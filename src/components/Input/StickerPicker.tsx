@@ -16,7 +16,10 @@ const getRecentStickers = () => {
   const existing = localStorage.getItem("fireverse-recent-stickers") || "[]";
   try {
     const parsed = JSON.parse(existing);
-    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed))
+      return parsed
+        .filter((item): item is string => typeof item === "string")
+        .slice(0, 30);
     return [];
   } catch (error) {
     return [];
@@ -24,14 +27,15 @@ const getRecentStickers = () => {
 };
 
 const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
-  const { data, loading, error } = useFetch<StickerCollections>("sticker", () =>
-    fetch(STICKERS_URL).then((res) => res.json())
+  const { data, loading, error, retry } = useFetch<StickerCollections>(
+    "sticker",
+    (signal) => fetch(STICKERS_URL, { signal }).then((res) => res.json()),
   );
 
   const [recentStickers, setRecentStickers] = useState(getRecentStickers());
 
   const addRecentSticker = (url: string) => {
-    const added = [...new Set([url, ...recentStickers])];
+    const added = [...new Set([url, ...recentStickers])].slice(0, 30);
 
     localStorage.setItem("fireverse-recent-stickers", JSON.stringify(added));
 
@@ -43,9 +47,13 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
       {(ref) => (
         <div
           ref={ref}
-          className="border-dark-lighten absolute -left-16 bottom-full h-96 w-96 rounded-lg border-2 bg-[#222222] shadow-2xl"
+          className="picker-panel rounded-lg border-2 border-dark-lighten bg-[#222222] shadow-2xl"
         >
-          {loading || error ? (
+          {error ? (
+            <p className="p-4 text-center">
+              Unable to load stickers. <button onClick={retry}>Retry</button>
+            </p>
+          ) : loading ? (
             <div className="flex h-full w-full items-center justify-center">
               <Spin />
             </div>
@@ -60,13 +68,14 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
                     <div className="grid w-full grid-cols-5 justify-between">
                       {recentStickers.map((url) => (
                         <SpriteRenderer
+                          key={url}
                           size={60}
                           onClick={() => {
                             onSelect(url);
                             addRecentSticker(url);
                             setIsOpened(false);
                           }}
-                          className="hover:bg-dark-lighten cursor-pointer"
+                          className="cursor-pointer hover:bg-dark-lighten"
                           src={url}
                           runOnHover
                         />
@@ -90,7 +99,7 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
                             addRecentSticker(sticker.spriteURL);
                             setIsOpened(false);
                           }}
-                          className="hover:bg-dark-lighten cursor-pointer"
+                          className="cursor-pointer hover:bg-dark-lighten"
                           src={sticker.spriteURL}
                           runOnHover
                         />
@@ -100,7 +109,7 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
                 ))}
               </div>
 
-              <div className="h-18 border-t-dark-lighten flex w-full shrink-0 gap-2 overflow-x-auto border-t p-2">
+              <div className="flex h-18 w-full shrink-0 gap-2 overflow-x-auto border-t border-t-dark-lighten p-2">
                 {recentStickers.length > 0 && (
                   <button
                     onClick={() =>
@@ -114,16 +123,24 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
                   </button>
                 )}
                 {data?.map((collection) => (
-                  <img
+                  <button
+                    aria-label={collection.name}
+                    key={collection.id}
                     onClick={() =>
                       document
                         .querySelector(`#sticker-${collection.id}`)
                         ?.scrollIntoView()
                     }
-                    className="h-9 w-9 cursor-pointer object-cover"
-                    src={collection.icon}
-                    alt=""
-                  />
+                    className="h-9 w-9 shrink-0"
+                  >
+                    <img
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                      src={collection.icon}
+                      alt=""
+                    />
+                  </button>
                 ))}
               </div>
             </div>

@@ -1,51 +1,14 @@
-import {
-  CollectionReference,
-  DocumentData,
-  Query,
-  QuerySnapshot,
-  onSnapshot,
-} from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { Query, QuerySnapshot, onSnapshot } from "firebase/firestore";
 
-let cache: { [key: string]: any } = {};
+import { useSubscription } from "./useSubscription";
 
-export const useCollectionQuery: (
+export const useCollectionQuery = <T>(
   key: string,
-  collection: CollectionReference | Query<DocumentData>
-) => { loading: boolean; error: boolean; data: QuerySnapshot | null } = (
-  key,
-  collection
-) => {
-  const [data, setData] = useState<QuerySnapshot<DocumentData> | null>(
-    cache[key] || null
+  query: Query<T>,
+  options?: { keepPrevious?: boolean },
+) =>
+  useSubscription<QuerySnapshot<T>>(
+    key,
+    (onNext, onError) => onSnapshot(query, onNext, onError),
+    options,
   );
-
-  const [loading, setLoading] = useState(!data);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection,
-      (snapshot) => {
-        setData(snapshot);
-        setLoading(false);
-        setError(false);
-        cache[key] = snapshot;
-      },
-      (err) => {
-        console.log(err);
-        setData(null);
-        setLoading(false);
-        setError(true);
-      }
-    );
-
-    return () => {
-      unsubscribe();
-    };
-
-    // eslint-disable-next-line
-  }, [key]);
-
-  return { loading, error, data };
-};

@@ -1,46 +1,50 @@
+export interface FirestoreTimestamp {
+  seconds: number;
+  nanoseconds: number;
+}
+
 export interface ConversationInfo {
   users: string[];
   group?: {
-    admins: string[];
-    groupName: null | string;
-    groupImage: null | string;
+    admins?: string[];
+    groupName?: null | string;
+    groupImage?: null | string;
   };
-
   seen: {
-    [key: string]: string;
+    [uid: string]: string;
   };
-  updatedAt: {
-    seconds: number;
-    nanoseconds: number;
-  };
+  updatedAt: FirestoreTimestamp | null;
   theme: string;
 }
 
 export interface SavedUser {
   uid: string;
   email: string | null;
-  displayName: string;
-  photoURL: string;
+  displayName: string | null;
+  photoURL: string | null;
   phoneNumber: string | null;
 }
 
-export interface MessageItem {
-  id?: string;
+export type MessageType = "text" | "image" | "file" | "sticker" | "removed";
+
+export interface MessageData {
   sender: string;
   content: string;
-  replyTo?: string;
+  replyTo?: string | null;
   file?: {
     name: string;
     size: number;
+  } | null;
+  // null while the server timestamp of a just-sent message is still pending
+  createdAt: FirestoreTimestamp | null;
+  type: MessageType;
+  reactions?: {
+    [uid: string]: number;
   };
-  createdAt: {
-    seconds: number;
-    nanoseconds: number;
-  };
-  type: "text" | "image" | "file" | "sticker" | "removed";
-  reactions: {
-    [key: string]: number;
-  };
+}
+
+export interface MessageItem extends MessageData {
+  id: string;
 }
 
 export interface StickerCollection {
@@ -55,3 +59,23 @@ export interface StickerCollection {
 }
 
 export type StickerCollections = StickerCollection[];
+
+interface GiphyRendition {
+  url: string;
+  width?: string;
+  height?: string;
+}
+
+export interface GiphyGif {
+  id: string;
+  title?: string;
+  images: {
+    original: GiphyRendition;
+    fixed_height_small?: GiphyRendition;
+    fixed_height?: GiphyRendition;
+  };
+}
+
+export interface GiphyResponse {
+  data: GiphyGif[];
+}

@@ -1,6 +1,8 @@
+import Toaster from "./components/Toaster";
+import { toast } from "./store/toast";
 import { FC, useEffect } from "react";
 import { auth, db } from "./shared/firebase";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 
 import { BarWave } from "./components/Loading";
 import { RouterProvider } from "@tanstack/react-router";
@@ -13,18 +15,33 @@ const App: FC = () => {
   const setCurrentUser = useStore((state) => state.setCurrentUser);
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-        setDoc(doc(db, "users", user.uid), {
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          phoneNumber: user.phoneNumber || user.providerData?.[0]?.phoneNumber,
-          createdAt: serverTimestamp(),
-        });
-      } else setCurrentUser(null);
+    return onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (!user) return;
+      const reference = doc(db, "users", user.uid);
+      void getDoc(reference)
+        .then((snapshot) =>
+          setDoc(
+            reference,
+            {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+              phoneNumber:
+                user.phoneNumber || user.providerData[0]?.phoneNumber || null,
+              ...(!snapshot.data()?.createdAt
+                ? { createdAt: serverTimestamp() }
+                : {}),
+            },
+            { merge: true },
+          ),
+        )
+        .catch(() =>
+          toast.error(
+            "Could not update your profile. Please try signing in again.",
+          ),
+        );
     });
   }, []);
 
@@ -35,12 +52,17 @@ const App: FC = () => {
 
   if (typeof currentUser === "undefined")
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-dvh items-center justify-center">
         <BarWave />
       </div>
     );
 
-  return <RouterProvider router={router} context={{ user: currentUser }} />;
+  return (
+    <>
+      <RouterProvider router={router} context={{ user: currentUser }} />
+      <Toaster />
+    </>
+  );
 };
 
 export default App;

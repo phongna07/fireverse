@@ -18,7 +18,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
   const { data: users, loading } = useUsersInfo(conversation.users);
   const currentUser = useStore((state) => state.currentUser);
 
-  const filtered = users?.filter((user) => user.id !== currentUser?.uid);
+  const filtered = users?.filter((user) => user.uid !== currentUser?.uid);
 
   const [isConversationSettingsOpened, setIsConversationSettingsOpened] =
     useState(false);
@@ -27,10 +27,10 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
 
   return (
     <>
-      <div className="border-dark-lighten flex h-20 items-center justify-between border-b px-5">
+      <div className="flex h-20 shrink-0 items-center justify-between border-b border-dark-lighten px-5">
         <div className="flex grow items-center gap-3">
-          <Link to="/" className="md:hidden">
-            <i className="bx bxs-chevron-left text-primary text-3xl"></i>
+          <Link to="/" aria-label="Back to conversations" className="md:hidden">
+            <i className="bx bxs-chevron-left text-3xl text-primary"></i>
           </Link>
           {loading ? (
             <Skeleton className="h-10 w-10 rounded-full" />
@@ -38,14 +38,18 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
             <>
               {conversation.users.length === 2 ? (
                 <img
+                  loading="lazy"
+                  decoding="async"
                   className="h-10 w-10 rounded-full"
-                  src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
+                  src={IMAGE_PROXY(filtered?.[0]?.photoURL)}
                   alt=""
                 />
               ) : (
                 <>
                   {conversation?.group?.groupImage ? (
                     <img
+                      loading="lazy"
+                      decoding="async"
                       className="h-10 w-10 shrink-0 rounded-full object-cover"
                       src={conversation.group.groupImage}
                       alt=""
@@ -53,13 +57,17 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
                   ) : (
                     <div className="relative h-10 w-10 shrink-0">
                       <img
+                        loading="lazy"
+                        decoding="async"
                         className="absolute top-0 right-0 h-7 w-7 shrink-0 rounded-full object-cover"
-                        src={IMAGE_PROXY(filtered?.[0]?.data()?.photoURL)}
+                        src={IMAGE_PROXY(filtered?.[0]?.photoURL)}
                         alt=""
                       />
                       <img
-                        className={`border-dark absolute bottom-0 left-0 z-1 h-7 w-7 shrink-0 rounded-full border-2 object-cover transition duration-300`}
-                        src={IMAGE_PROXY(filtered?.[1]?.data()?.photoURL)}
+                        loading="lazy"
+                        decoding="async"
+                        className={`absolute bottom-0 left-0 z-1 h-7 w-7 shrink-0 rounded-full border-2 border-dark object-cover transition duration-300`}
+                        src={IMAGE_PROXY(filtered?.[1]?.photoURL)}
                         alt=""
                       />
                     </div>
@@ -76,7 +84,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
               {conversation.users.length > 2 && conversation?.group?.groupName
                 ? conversation.group.groupName
                 : filtered
-                    ?.map((user) => user.data()?.displayName)
+                    ?.map((user) => user.displayName)
                     .slice(0, 3)
                     .join(", ")}
             </p>
@@ -87,12 +95,12 @@ const ChatHeader: FC<ChatHeaderProps> = ({ conversation }) => {
           <>
             {conversation.users.length > 2 && (
               <button onClick={() => setIsGroupMembersOpened(true)}>
-                <i className="bx bxs-group text-primary text-2xl"></i>
+                <i className="bx bxs-group text-2xl text-primary"></i>
               </button>
             )}
 
             <button onClick={() => setIsConversationSettingsOpened(true)}>
-              <i className="bx bxs-info-circle text-primary text-2xl"></i>
+              <i className="bx bxs-info-circle text-2xl text-primary"></i>
             </button>
           </>
         )}

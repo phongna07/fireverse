@@ -1,44 +1,96 @@
-import {
-  DocumentData,
-  DocumentSnapshot,
-  doc,
-  getDoc,
-} from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-import { db } from "../shared/firebase";
+import { SavedUser } from "../shared/types";
+import { doc } from "firebase/firestore";
+import { getDoc } from "firebase/firestore";
+import { usersCollection } from "../shared/collections";
 
-let cache: { [key: string]: any } = {};
+const cache = new Map<string, SavedUser>();
+const pending = new Map<string, Promise<SavedUser>>();
 
-export const useUsersInfo = (userIds: string[]) => {
-  const [data, setData] = useState<DocumentSnapshot<DocumentData>[] | null>(
-    userIds.every((id) => cache[id]) ? userIds.map((id) => cache[id]) : null
-  );
-  const [loading, setLoading] = useState(!data);
-  const [error, setError] = useState(false);
+// Concurrent requests for the same user share one read
+const fetchUser = (uid: string) => {
+  const cached = cache.get(uid);
+  if (cached) return Promise.resolve(cached);
+
+  const existing = pending.get(uid);
+  if (existing) return existing;
+
+  const request = getDoc(doc(usersCollection, uid))
+    .then((snapshot) => {
+      const user: SavedUser = {
+        email: null,
+        displayName: "Unknown user",
+        photoURL: null,
+        phoneNumber: null,
+        ...snapshot.data(),
+        uid,
+      };
+      cache.set(uid, user);
+      return user;
+    })
+    .finally(() => pending.delete(uid));
+
+  pending.set(uid, request);
+
+  return request;
+};
+
+interface State {
+  key: string;
+  data: SavedUser[] | null;
+  error: boolean;
+}
+
+export const useUsersInfo = (userIds: string[] = []) => {
+  const key = userIds.join(",");
+
+  const getInitialState = (): State => ({
+    key,
+    data: userIds.every((id) => cache.has(id))
+      ? userIds.map((id) => cache.get(id) as SavedUser)
+      : null,
+    error: false,
+  });
+
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => {
+    setState({ key, data: null, error: false });
+    setAttempt((value) => value + 1);
+  }, [key]);
+  const [state, setState] = useState(getInitialState);
+
+  let current = state;
+  if (state.key !== key) {
+    current = getInitialState();
+    setState(current);
+  }
+
+  const isResolved = current.data !== null;
 
   useEffect(() => {
-    try {
-      (async () => {
-        const response = await Promise.all(
-          userIds.map(async (id) => {
-            if (cache[id]) return cache[id];
-            const res = await getDoc(doc(db, "users", id));
-            cache[id] = res;
-            return res;
-          })
-        );
+    if (isResolved) return;
 
-        setData(response);
-        setLoading(false);
-        setError(false);
-      })();
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-      setError(true);
-    }
-  }, [JSON.stringify(userIds)]);
+    let cancelled = false;
 
-  return { data, loading, error };
+    Promise.all(key ? key.split(",").map(fetchUser) : [])
+      .then((data) => {
+        if (!cancelled) setState({ key, data, error: false });
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!cancelled) setState({ key, data: null, error: true });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [key, isResolved, attempt]);
+
+  return {
+    data: current.data,
+    loading: !current.data && !current.error,
+    error: current.error,
+    retry,
+  };
 };

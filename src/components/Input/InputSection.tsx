@@ -16,19 +16,20 @@ import {
   serverTimestamp,
   updateDoc,
 } from "firebase/firestore";
-import { db, storage } from "../../shared/firebase";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { db } from "../../shared/firebase";
+import configs, { UPLOADS_DISABLED_MESSAGE } from "../../shared/configs";
+import { uploadToStorage } from "../../shared/upload";
+import { MessageItem } from "../../shared/types";
 
-import Alert from "../Alert";
+import { toast } from "../../store/toast";
 import ClickAwayListener from "../ClickAwayListener";
 import { EMOJI_REPLACEMENT } from "../../shared/constants";
 import GifIcon from "../Icon/GifIcon";
-import GifPicker from "./GifPicker";
+const GifPicker = lazy(() => import("./GifPicker"));
 import ReplyIcon from "../Icon/ReplyIcon";
 import { Spinner as Spin } from "../Loading";
 import StickerIcon from "../Icon/StickerIcon";
-import StickerPicker from "./StickerPicker";
-import { formatFileName } from "../../shared/utils";
+const StickerPicker = lazy(() => import("./StickerPicker"));
 import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
 
@@ -36,14 +37,12 @@ const Picker = lazy(() => import("./EmojiPicker"));
 
 interface InputSectionProps {
   disabled: boolean;
-  setInputSectionOffset?: (value: number) => void;
-  replyInfo?: any;
-  setReplyInfo?: (value: any) => void;
+  replyInfo?: MessageItem | null;
+  setReplyInfo?: (value: MessageItem | null) => void;
 }
 
 const InputSection: FC<InputSectionProps> = ({
   disabled,
-  setInputSectionOffset,
   replyInfo,
   setReplyInfo,
 }) => {
@@ -57,9 +56,6 @@ const InputSection: FC<InputSectionProps> = ({
   const [isIconPickerOpened, setIsIconPickerOpened] = useState(false);
   const [isGifPickerOpened, setIsGifPickerOpened] = useState(false);
 
-  const [isAlertOpened, setIsAlertOpened] = useState(false);
-  const [alertText, setAlertText] = useState("");
-
   const conversationId = useConversationId();
   const currentUser = useStore((state) => state.currentUser);
 
@@ -67,21 +63,37 @@ const InputSection: FC<InputSectionProps> = ({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const previewsRef = useRef(previewFiles);
+  useEffect(() => {
+    for (const url of previewsRef.current)
+      if (!previewFiles.includes(url)) URL.revokeObjectURL(url);
+    previewsRef.current = previewFiles;
+  }, [previewFiles]);
+  useEffect(
+    () => () => {
+      for (const url of previewsRef.current) URL.revokeObjectURL(url);
+    },
+    [],
+  );
+
   const [fileDragging, setFileDragging] = useState(false);
 
   const updateTimestamp = () => {
     updateDoc(doc(db, "conversations", conversationId as string), {
       updatedAt: serverTimestamp(),
-    });
+    }).catch(() =>
+      toast.error("Could not update the conversation. Please try again."),
+    );
   };
 
   useEffect(() => {
     const handler = () => {
-      textInputRef.current?.focus();
+      if (!disabled && !document.querySelector("[role=dialog]"))
+        textInputRef.current?.focus();
     };
     window.addEventListener("focus", handler);
     return () => window.removeEventListener("focus", handler);
-  }, []);
+  }, [disabled]);
 
   useEffect(() => {
     textInputRef.current?.focus();
@@ -89,9 +101,9 @@ const InputSection: FC<InputSectionProps> = ({
 
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (disabled || fileUploading || !currentUser || !conversationId) return;
 
     if (previewFiles.length > 0) {
-      setPreviewFiles([]);
       for (let i = 0; i < previewFiles.length; i++) {
         const url = previewFiles[i];
         const res = await fetch(url);
@@ -101,6 +113,7 @@ const InputSection: FC<InputSectionProps> = ({
         });
         await uploadFile(file);
       }
+      setPreviewFiles([]);
     } else {
       if (fileUploading) return;
     }
@@ -129,8 +142,11 @@ const InputSection: FC<InputSectionProps> = ({
         type: "text",
         createdAt: serverTimestamp(),
         replyTo: replyInfo?.id || null,
-      }
-    );
+      },
+    ).catch(() => {
+      toast.error("Unable to send your message. Please try again.");
+      setInputValue((current) => current || inputValue);
+    });
 
     updateTimestamp();
   };
@@ -143,36 +159,31 @@ const InputSection: FC<InputSectionProps> = ({
         content: url,
         type: "sticker",
         createdAt: serverTimestamp(),
-      }
-    );
+      },
+    ).catch(() => toast.error("Unable to send the sticker. Please try again."));
 
     updateTimestamp();
   };
 
   const uploadFile = async (file: File) => {
-    // Try to fix this issue:
-    alert(
-      "Google Firebase Storage no longer offers free storage. Sorry, but this feature is not available."
-    );
-    throw new Error("Google Firebase Storage no longer offers free storage.");
+    if (!configs.enableUploads) {
+      toast.info(UPLOADS_DISABLED_MESSAGE);
+      return;
+    }
     try {
       const TWENTY_MB = 1024 * 1024 * 20;
 
       if (file.size > TWENTY_MB) {
-        setAlertText("Max file size is 20MB");
-        setIsAlertOpened(true);
+        toast.info("Max file size is 20MB");
+
         return;
       }
 
       setFileUploading(true);
 
-      const fileReference = ref(storage, formatFileName(file.name));
+      const downloadURL = await uploadToStorage(file);
 
-      await uploadBytes(fileReference, file);
-
-      const downloadURL = await getDownloadURL(fileReference);
-
-      addDoc(
+      await addDoc(
         collection(db, "conversations", conversationId as string, "messages"),
         {
           sender: currentUser?.uid,
@@ -185,13 +196,13 @@ const InputSection: FC<InputSectionProps> = ({
                 size: file.size,
               },
           createdAt: serverTimestamp(),
-        }
+        },
       );
 
       setFileUploading(false);
       updateTimestamp();
     } catch (error) {
-      console.log(error);
+      toast.error("Unable to send the file. Please try again.");
       setFileUploading(false);
     }
   };
@@ -201,7 +212,8 @@ const InputSection: FC<InputSectionProps> = ({
 
     if (!file) return;
 
-    uploadFile(file);
+    void uploadFile(file);
+    e.target.value = "";
   };
 
   const addIconToInput = (value: string) => {
@@ -212,12 +224,13 @@ const InputSection: FC<InputSectionProps> = ({
     setInputValue(splitted.join(""));
   };
 
-  const handleReplaceEmoji = (e: any) => {
+  const handleReplaceEmoji = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === " ") {
-      if (e.target.selectionStart !== e.target.selectionEnd) return;
+      if (e.currentTarget.selectionStart !== e.currentTarget.selectionEnd)
+        return;
 
       const lastWord = inputValue
-        .slice(0, e.target.selectionStart)
+        .slice(0, e.currentTarget.selectionStart ?? 0)
         .split(" ")
         .slice(-1)[0];
 
@@ -228,9 +241,9 @@ const InputSection: FC<InputSectionProps> = ({
           if (item === lastWord) {
             const splitted = inputValue.split("");
             splitted.splice(
-              e.target.selectionStart - lastWord.length,
+              (e.currentTarget.selectionStart ?? 0) - lastWord.length,
               lastWord.length,
-              key
+              key,
             );
             setInputValue(splitted.join(""));
           }
@@ -248,62 +261,52 @@ const InputSection: FC<InputSectionProps> = ({
         type: "image",
         file: null,
         createdAt: serverTimestamp(),
-      }
-    );
+      },
+    ).catch(() => toast.error("Unable to send the GIF. Please try again."));
+    updateTimestamp();
   };
-
-  useEffect(() => {
-    if (!setInputSectionOffset) return;
-    if (previewFiles.length > 0) return setInputSectionOffset(128);
-
-    if (!!replyInfo) return setInputSectionOffset(76);
-
-    setInputSectionOffset(0);
-  }, [previewFiles.length, replyInfo]);
 
   const handlePaste: ClipboardEventHandler<HTMLInputElement> = (e) => {
     const file = e?.clipboardData?.files?.[0];
-    if (!file || !file.type.startsWith("image")) return;
+    if (!file) return;
 
+    if (!configs.enableUploads) {
+      e.preventDefault();
+      toast.info(UPLOADS_DISABLED_MESSAGE);
+      return;
+    }
     const url = URL.createObjectURL(file);
 
     setPreviewFiles([...previewFiles, url]);
   };
 
   useEffect(() => {
-    const dragBlurHandler = (e: any) => {
+    const dragBlurHandler = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
       setFileDragging(false);
     };
 
-    const dragFocusHandler = (e: any) => {
+    const dragFocusHandler = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes("Files")) return;
       e.preventDefault();
       e.stopPropagation();
       setFileDragging(true);
     };
 
-    const dropFileHandler = async (e: any) => {
+    const dropFileHandler = async (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
       setFileDragging(false);
 
-      let items = e.dataTransfer.items;
-      let files = e.dataTransfer.files;
-
-      let selectedFiles = [];
-
-      for (let i = 0, item; (item = items[i]); ++i) {
-        let entry = item.webkitGetAsEntry();
-        if (entry.isFile) {
-          selectedFiles.push(files[i]);
-        }
+      if (disabled) return;
+      if (!configs.enableUploads) {
+        toast.info(UPLOADS_DISABLED_MESSAGE);
+        return;
       }
-
-      for (let i = 0; i < selectedFiles.length; i++) {
-        await uploadFile(selectedFiles[i]);
-      }
+      for (const file of Array.from(e.dataTransfer?.files || []))
+        await uploadFile(file);
     };
 
     addEventListener("dragenter", dragFocusHandler);
@@ -317,36 +320,46 @@ const InputSection: FC<InputSectionProps> = ({
       removeEventListener("dragleave", dragBlurHandler);
       removeEventListener("drop", dropFileHandler);
     };
-  }, []);
+  }, [conversationId, disabled]);
 
   return (
     <>
       {fileDragging && (
-        <div className="pointer-events-none fixed top-0 left-0 z-20 flex h-full w-full select-none items-center justify-center backdrop-blur-xs">
-          <h1 className="text-3xl">Drop file to send</h1>
+        <div className="pointer-events-none fixed top-0 left-0 z-20 flex h-full w-full items-center justify-center backdrop-blur-xs select-none">
+          <h1 className="text-3xl">
+            {configs.enableUploads
+              ? "Drop file to send"
+              : "Uploads are disabled"}
+          </h1>
         </div>
       )}
       {previewFiles.length > 0 && (
-        <div className="border-dark-lighten flex h-32 items-center gap-2 border-t px-4">
+        <div className="flex h-32 shrink-0 items-center gap-2 border-t border-dark-lighten px-4">
           {previewFiles.map((preview) => (
             <div key={preview} className="relative">
-              <img className="h-28 w-28 object-cover" src={preview} alt="" />
+              <img
+                loading="lazy"
+                decoding="async"
+                className="h-28 w-28 object-cover"
+                src={preview}
+                alt=""
+              />
               <button
                 onClick={() =>
                   setPreviewFiles(
-                    previewFiles.filter((item) => item !== preview)
+                    previewFiles.filter((item) => item !== preview),
                   )
                 }
                 className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gray-100"
               >
-                <i className="bx bx-x text-dark text-lg"></i>
+                <i className="bx bx-x text-lg text-dark"></i>
               </button>
             </div>
           ))}
         </div>
       )}
       {previewFiles.length === 0 && !!replyInfo && (
-        <div className="border-dark-lighten flex h-[76px] justify-between border-t p-4">
+        <div className="flex h-[76px] shrink-0 justify-between border-t border-dark-lighten p-4">
           <div>
             <div className="flex items-center gap-2">
               <ReplyIcon />
@@ -376,13 +389,18 @@ const InputSection: FC<InputSectionProps> = ({
         </div>
       )}
       <div
-        className={`border-dark-lighten flex h-16 items-stretch gap-1 border-t px-4 ${
+        className={`flex h-16 items-stretch gap-1 border-t border-dark-lighten px-4 ${
           disabled ? "pointer-events-none select-none" : ""
         }`}
       >
         <button
+          aria-label="Attach image"
+          title={
+            configs.enableUploads ? "Attach image" : UPLOADS_DISABLED_MESSAGE
+          }
+          disabled={!configs.enableUploads || disabled}
           onClick={() => imageInputRef.current?.click()}
-          className="text-primary flex shrink-0 items-center text-2xl"
+          className="flex shrink-0 items-center text-2xl text-primary"
         >
           <i className="bx bxs-image-add"></i>
         </button>
@@ -395,8 +413,13 @@ const InputSection: FC<InputSectionProps> = ({
           onChange={handleFileInputChange}
         />
         <button
+          aria-label="Attach file"
+          title={
+            configs.enableUploads ? "Attach file" : UPLOADS_DISABLED_MESSAGE
+          }
+          disabled={!configs.enableUploads || disabled}
           onClick={() => fileInputRef.current?.click()}
-          className="text-primary flex shrink-0 items-center text-2xl"
+          className="flex shrink-0 items-center text-2xl text-primary"
         >
           <i className="bx bx-link-alt"></i>
         </button>
@@ -409,10 +432,12 @@ const InputSection: FC<InputSectionProps> = ({
         />
         <div className="relative flex shrink-0 items-center">
           {isStickerPickerOpened && (
-            <StickerPicker
-              setIsOpened={setIsStickerPickerOpened}
-              onSelect={sendSticker}
-            />
+            <Suspense fallback={<Spin />}>
+              <StickerPicker
+                setIsOpened={setIsStickerPickerOpened}
+                onSelect={sendSticker}
+              />
+            </Suspense>
           )}
 
           <button
@@ -425,7 +450,12 @@ const InputSection: FC<InputSectionProps> = ({
 
         <div className="relative flex shrink-0 items-center">
           {isGifPickerOpened && (
-            <GifPicker setIsOpened={setIsGifPickerOpened} onSelect={sendGif} />
+            <Suspense fallback={<Spin />}>
+              <GifPicker
+                setIsOpened={setIsGifPickerOpened}
+                onSelect={sendGif}
+              />
+            </Suspense>
           )}
 
           <button
@@ -438,9 +468,9 @@ const InputSection: FC<InputSectionProps> = ({
 
         <form
           onSubmit={handleFormSubmit}
-          className="flex grow items-stretch gap-1"
+          className="flex min-w-0 grow items-stretch gap-1"
         >
-          <div className="relative flex grow items-center">
+          <div className="relative flex min-w-0 grow items-center">
             <input
               maxLength={1000}
               disabled={disabled}
@@ -451,16 +481,16 @@ const InputSection: FC<InputSectionProps> = ({
               }}
               onKeyDown={handleReplaceEmoji}
               onPaste={handlePaste}
-              className="bg-dark-lighten h-9 w-full rounded-full pl-3 pr-10 outline-hidden"
+              className="h-9 w-full rounded-full bg-dark-lighten pr-10 pl-3 outline-hidden"
               type="text"
               placeholder="Message..."
             />
             <button
               type="button"
               onClick={() => setIsIconPickerOpened(true)}
-              className="absolute right-2 top-1/2 -translate-y-1/2"
+              className="absolute top-1/2 right-2 -translate-y-1/2"
             >
-              <i className="bx bxs-smile text-primary text-2xl"></i>
+              <i className="bx bxs-smile text-2xl text-primary"></i>
             </button>
 
             {isIconPickerOpened && (
@@ -468,7 +498,7 @@ const InputSection: FC<InputSectionProps> = ({
                 onClickAway={() => setIsIconPickerOpened(false)}
               >
                 {(ref) => (
-                  <div ref={ref} className="absolute bottom-full right-0">
+                  <div ref={ref} className="picker-panel emoji-panel">
                     <Suspense
                       fallback={
                         <div className="flex h-[357px] w-[348px] items-center justify-center rounded-lg border-2 border-[#555453] bg-[#222222]">
@@ -477,7 +507,9 @@ const InputSection: FC<InputSectionProps> = ({
                       }
                     >
                       <Picker
-                        onSelect={(emoji: any) => addIconToInput(emoji.native)}
+                        onSelect={(emoji: { native: string }) =>
+                          addIconToInput(emoji.native)
+                        }
                       />
                     </Suspense>
                   </div>
@@ -490,19 +522,15 @@ const InputSection: FC<InputSectionProps> = ({
               <Spin size={24} />
             </div>
           ) : (
-            <button className="text-primary flex shrink-0 items-center text-2xl">
+            <button
+              aria-label="Send message"
+              className="flex shrink-0 items-center text-2xl text-primary"
+            >
               <i className="bx bxs-send"></i>
             </button>
           )}
         </form>
       </div>
-
-      <Alert
-        isOpened={isAlertOpened}
-        setIsOpened={setIsAlertOpened}
-        text={alertText}
-        isError
-      />
     </>
   );
 };

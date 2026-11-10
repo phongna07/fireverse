@@ -23,12 +23,12 @@ const EmojiPicker: FC<EmojiPickerProps> = ({ onSelect }) => {
 
     const picker = new Picker({
       data,
+      dynamicWidth: true,
       set: "facebook",
       theme: "dark",
       previewPosition: "none",
       skinTonePosition: "none",
-      onEmojiSelect: (emoji: { native: string }) =>
-        onSelectRef.current(emoji),
+      onEmojiSelect: (emoji: { native: string }) => onSelectRef.current(emoji),
     }) as unknown as HTMLElement;
 
     container.appendChild(picker);
@@ -38,7 +38,7 @@ const EmojiPicker: FC<EmojiPickerProps> = ({ onSelect }) => {
     };
   }, []);
 
-  return <div ref={containerRef} />;
+  return <div className="w-full" ref={containerRef} />;
 };
 
 export default EmojiPicker;

@@ -22,7 +22,12 @@ export const Spinner: FC<SpinnerProps> = ({
 export const BarWave: FC<{ color?: string }> = ({
   color = "var(--primary-color)",
 }) => (
-  <span role="status" aria-label="Loading" className="bar-wave" style={{ color }}>
+  <span
+    role="status"
+    aria-label="Loading"
+    className="bar-wave"
+    style={{ color }}
+  >
     <span />
     <span />
     <span />

@@ -47,7 +47,7 @@ Official Website: [https://fireverse.pages.dev](https://fireverse.pages.dev)
 ## Installation
 
 - Clone the project
-- Run `npm install`
+- Use Node.js 24 LTS and run `npm install`
 - Create your own firebase project
   - Enable auth (google, facebook)
   - Enable cloud firestore
@@ -62,7 +62,11 @@ VITE_GIPHY_API_KEY=your_api_key
 VITE_ENABLE_UPLOADS=false
 ```
 
-- Run `npm run dev` to start the dev server, `npm run build` for a production build
+- Copy `.env.example` to `.env` and fill in your Firebase configuration and Giphy key.
+- Run `npm run dev` to start the dev server, `npm run typecheck` to check TypeScript, and `npm run build` for a production build.
+- Uploads are off by default. Set `VITE_ENABLE_UPLOADS=true` only after configuring Firebase Storage.
+- Production hosting must serve `index.html` for application routes such as `/sign-in` and conversation URLs.
+- See [MODERNIZATION.md](./MODERNIZATION.md) for validation and remaining manual checks.
 
 ## Previews
 

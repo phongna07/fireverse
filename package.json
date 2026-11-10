@@ -16,7 +16,6 @@
     "firebase": "^13.2.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-infinite-scroll-component": "^7.2.1",
     "zustand": "^5.1.0"
   },
   "private": true,
