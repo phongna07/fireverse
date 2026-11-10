@@ -14,6 +14,8 @@ const FileIcon: FC<FileIconProps> = ({ extension, className }) => {
 
   return (
     <img
+      loading="lazy"
+      decoding="async"
       className={className || ""}
       onError={() => setIsError(true)}
       src={FILE_ICON(extension)}

@@ -1,24 +1,44 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
+
 import { Picker } from "emoji-mart";
+import data from "@emoji-mart/data/sets/15/facebook.json";
 
 interface EmojiPickerProps {
-  onSelect: (emoji: any) => void;
+  onSelect: (emoji: { native: string }) => void;
 }
 
+// @emoji-mart/react does not support React 19, so the core picker (a custom
+// element) is mounted by hand.
 const EmojiPicker: FC<EmojiPickerProps> = ({ onSelect }) => {
-  return (
-    <Picker
-      set="facebook"
-      enableFrequentEmojiSort
-      onSelect={onSelect}
-      theme="dark"
-      showPreview={false}
-      showSkinTones={false}
-      emojiTooltip
-      defaultSkin={1}
-      color="#0F8FF3"
-    />
-  );
+  const containerRef = useRef<HTMLDivElement>(null);
+  const onSelectRef = useRef(onSelect);
+
+  useEffect(() => {
+    onSelectRef.current = onSelect;
+  });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const picker = new Picker({
+      data,
+      dynamicWidth: true,
+      set: "facebook",
+      theme: "dark",
+      previewPosition: "none",
+      skinTonePosition: "none",
+      onEmojiSelect: (emoji: { native: string }) => onSelectRef.current(emoji),
+    }) as unknown as HTMLElement;
+
+    container.appendChild(picker);
+
+    return () => {
+      picker.remove();
+    };
+  }, []);
+
+  return <div className="w-full" ref={containerRef} />;
 };
 
 export default EmojiPicker;

@@ -1,13 +1,7 @@
+import "boxicons/css/boxicons.min.css";
 import "./styles/index.css";
-import "emoji-mart/css/emoji-mart.css";
 
 import App from "./App";
-import { BrowserRouter } from "react-router-dom";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 
-ReactDOM.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>,
-  document.getElementById("root")
-);
+createRoot(document.getElementById("root") as HTMLElement).render(<App />);

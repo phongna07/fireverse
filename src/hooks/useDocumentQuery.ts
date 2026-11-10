@@ -1,43 +1,15 @@
 import {
-  DocumentData,
   DocumentReference,
   DocumentSnapshot,
   onSnapshot,
 } from "firebase/firestore";
-import { useEffect, useState } from "react";
 
-let cache: { [key: string]: any } = {};
+import { useSubscription } from "./useSubscription";
 
-export const useDocumentQuery = (
+export const useDocumentQuery = <T>(
   key: string,
-  document: DocumentReference<DocumentData>
-) => {
-  const [data, setData] = useState<DocumentSnapshot<DocumentData> | null>(
-    cache[key] || null
+  document: DocumentReference<T>,
+) =>
+  useSubscription<DocumentSnapshot<T>>(key, (onNext, onError) =>
+    onSnapshot(document, onNext, onError),
   );
-  const [loading, setLoading] = useState(!Boolean(data));
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      document,
-      (snapshot) => {
-        setData(snapshot);
-        setLoading(false);
-      },
-      (err) => {
-        console.log(err);
-        setData(null);
-        setLoading(false);
-        setError(true);
-      }
-    );
-
-    return () => {
-      unsubscribe();
-    };
-    // eslint-disable-next-line
-  }, [key]);
-
-  return { loading, error, data };
-};

@@ -15,71 +15,69 @@ const SpriteRenderer: FC<HTMLProps<HTMLDivElement> & SpriteRendererProps> = ({
   ...others
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-
   const [loaded, setLoaded] = useState(false);
-  const intervalId = useRef<any>(null);
-
   useEffect(() => {
     setLoaded(false);
-
-    const img = new Image();
-    img.src = src;
-
-    img.addEventListener(
-      "load",
-      () => {
-        setLoaded(true);
-
-        let stepCount = Math.ceil(img.width / img.height);
-
-        let count = 0;
-
-        if (runOnHover) {
-          containerRef.current?.addEventListener("mouseenter", () => {
-            intervalId.current = setInterval(() => {
-              if (!containerRef.current) clearInterval(intervalId.current);
-
-              containerRef.current &&
-                (containerRef.current.style.backgroundPosition = `${Math.round(
-                  -((count % stepCount) + 1) * size
-                )}px 50%`);
-
-              count++;
-            }, delay);
-          });
-
-          containerRef.current?.addEventListener("mouseleave", () => {
-            if (intervalId.current) clearInterval(intervalId.current);
-
-            count = 0;
-
-            containerRef.current &&
-              (containerRef.current.style.backgroundPosition = "0px 50%");
-          });
-        } else {
-          intervalId.current = setInterval(() => {
-            if (!containerRef.current) clearInterval(intervalId.current);
-
-            containerRef.current &&
-              (containerRef.current.style.backgroundPosition = `${Math.round(
-                -((count % stepCount) + 1) * size
-              )}px 50%`);
-
-            count++;
-          }, delay);
-        }
-      },
-      { once: true }
-    );
-
-    return () => {
-      if (intervalId.current) clearInterval(intervalId.current);
+    const el = containerRef.current;
+    if (!el) return;
+    const image = new Image();
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let disposed = false;
+    let frames = 1;
+    let frame = 0;
+    const stop = () => {
+      clearInterval(interval);
+      interval = undefined;
+      frame = 0;
+      el.style.backgroundPosition = "0px 50%";
     };
-  }, []);
-
+    const start = () => {
+      if (interval || reduced.matches || frames <= 1) return;
+      interval = setInterval(() => {
+        frame = (frame + 1) % frames;
+        el.style.backgroundPosition = `${-frame * size}px 50%`;
+      }, delay);
+    };
+    image.onload = () => {
+      if (disposed) return;
+      frames = Math.max(1, Math.round(image.width / image.height));
+      setLoaded(true);
+      if (!runOnHover) start();
+    };
+    const motionChanged = () => {
+      stop();
+      if (!runOnHover) start();
+    };
+    image.src = src;
+    el.addEventListener("mouseenter", start);
+    el.addEventListener("mouseleave", stop);
+    el.addEventListener("focus", start);
+    el.addEventListener("blur", stop);
+    reduced.addEventListener("change", motionChanged);
+    return () => {
+      disposed = true;
+      image.onload = null;
+      stop();
+      el.removeEventListener("mouseenter", start);
+      el.removeEventListener("mouseleave", stop);
+      el.removeEventListener("focus", start);
+      el.removeEventListener("blur", stop);
+      reduced.removeEventListener("change", motionChanged);
+    };
+  }, [src, size, runOnHover, delay]);
   return (
     <div
       ref={containerRef}
+      role={others.onClick ? "button" : undefined}
+      tabIndex={others.onClick ? 0 : undefined}
+      aria-label={others.onClick ? "Select sticker" : undefined}
+      onKeyDown={(event) => {
+        if ((event.key === "Enter" || event.key === " ") && others.onClick) {
+          event.preventDefault();
+          event.currentTarget.click();
+        }
+      }}
       style={{
         width: size,
         height: size,
@@ -88,8 +86,7 @@ const SpriteRenderer: FC<HTMLProps<HTMLDivElement> & SpriteRendererProps> = ({
         backgroundSize: "cover",
       }}
       {...others}
-    ></div>
+    />
   );
 };
-
 export default SpriteRenderer;

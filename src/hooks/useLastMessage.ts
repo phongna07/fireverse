@@ -1,88 +1,58 @@
-import {
-  collection,
-  limitToLast,
-  onSnapshot,
-  orderBy,
-  query,
-} from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { limitToLast, onSnapshot, orderBy, query } from "firebase/firestore";
 
-import { db } from "../shared/firebase";
-import { formatDate } from "../shared/utils";
+import { formatTimestamp } from "../shared/utils";
+import { messagesCollection } from "../shared/collections";
+import { useSubscription } from "./useSubscription";
 
-let cache: { [key: string]: any } = {};
+interface LastMessage {
+  lastMessageId: string | null;
+  message: string;
+}
 
-export const useLastMessage = (conversationId: string) => {
-  const [data, setData] = useState<{
-    lastMessageId: string | null;
-    message: string;
-  } | null>(cache[conversationId] || null);
-  const [loading, setLoading] = useState(!data);
-  const [error, setError] = useState(false);
+const MAX_LENGTH = 30;
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      query(
-        collection(db, "conversations", conversationId, "messages"),
-        orderBy("createdAt"),
-        limitToLast(1)
-      ),
-      (snapshot) => {
-        if (snapshot.empty) {
-          setData({
-            lastMessageId: null,
-            message: "No message recently",
+export const useLastMessage = (conversationId: string) =>
+  useSubscription<LastMessage>(
+    `last-message-${conversationId}`,
+    (onNext, onError) =>
+      onSnapshot(
+        query(
+          messagesCollection(conversationId),
+          orderBy("createdAt"),
+          limitToLast(1),
+        ),
+        (snapshot) => {
+          const lastDoc = snapshot.docs[0];
+
+          if (!lastDoc)
+            return onNext({
+              lastMessageId: null,
+              message: "No message recently",
+            });
+
+          const message = lastDoc.data();
+
+          const text =
+            message.type === "image"
+              ? "An image"
+              : message.type === "file"
+                ? `File: ${message.file?.name.split(".").slice(-1)[0]}`
+                : message.type === "sticker"
+                  ? "A sticker"
+                  : message.type === "removed"
+                    ? "Message removed"
+                    : message.content || "";
+
+          const formattedDate = formatTimestamp(message.createdAt);
+          const maxLength = MAX_LENGTH - formattedDate.length;
+
+          onNext({
+            lastMessageId: lastDoc.id,
+            message: `${
+              text.length > maxLength ? `${text.slice(0, maxLength)}...` : text
+            } • ${formattedDate}`,
           });
-          setLoading(false);
-          setError(false);
-          return;
-        }
-        const type = snapshot.docs?.[0]?.data()?.type;
-        let response =
-          type === "image"
-            ? "An image"
-            : type === "file"
-            ? `File: ${
-                snapshot.docs[0]?.data()?.file?.name.split(".").slice(-1)[0]
-              }`
-            : type === "sticker"
-            ? "A sticker"
-            : type === "removed"
-            ? "Message removed"
-            : (snapshot.docs[0].data().content as string);
-
-        const seconds = snapshot.docs[0]?.data()?.createdAt?.seconds;
-        const formattedDate = formatDate(seconds ? seconds * 1000 : Date.now());
-
-        response =
-          response.length > 30 - formattedDate.length
-            ? `${response.slice(0, 30 - formattedDate.length)}...`
-            : response;
-
-        const result = `${response} • ${formattedDate}`;
-        setData({
-          lastMessageId: snapshot.docs?.[0]?.id,
-          message: result,
-        });
-        cache[conversationId] = {
-          lastMessageId: snapshot.docs?.[0]?.id,
-          message: result,
-        };
-        setLoading(false);
-        setError(false);
-      },
-      (err) => {
-        console.log(err);
-        setData(null);
-        setLoading(false);
-        setError(true);
-      }
-    );
-
-    return () => {
-      unsubscribe();
-    };
-  }, [conversationId]);
-
-  return { data, loading, error };
-};
+        },
+        onError,
+      ),
+  );

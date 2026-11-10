@@ -23,6 +23,8 @@ const AvatarFromId: FC<AvatarFromIdProps> = ({ uid, size = 30 }) => {
   if (error)
     return (
       <img
+        loading="lazy"
+        decoding="async"
         src={DEFAULT_AVATAR}
         className="rounded-full"
         style={{ width: size, height: size }}
@@ -31,10 +33,12 @@ const AvatarFromId: FC<AvatarFromIdProps> = ({ uid, size = 30 }) => {
 
   return (
     <img
-      title={data?.[0].data()?.displayName}
+      loading="lazy"
+      decoding="async"
+      title={data?.[0]?.displayName || undefined}
       style={{ width: size, height: size }}
       className="rounded-full object-cover"
-      src={IMAGE_PROXY(data?.[0].data()?.photoURL)}
+      src={IMAGE_PROXY(data?.[0]?.photoURL)}
     ></img>
   );
 };

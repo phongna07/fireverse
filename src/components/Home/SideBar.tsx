@@ -1,16 +1,16 @@
+import { conversationsCollection } from "../../shared/collections";
 import { DEFAULT_AVATAR, IMAGE_PROXY } from "../../shared/constants";
 import { FC, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { collection, orderBy, query, where } from "firebase/firestore";
+import { Link, useLocation } from "@tanstack/react-router";
+import { orderBy, query, where } from "firebase/firestore";
 
 import ClickAwayListener from "../ClickAwayListener";
 import { ConversationInfo } from "../../shared/types";
 import CreateConversation from "./CreateConversation";
 import SelectConversation from "./SelectConversation";
-import Spin from "react-cssfx-loading/src/Spin";
+import { Spinner as Spin } from "../Loading";
 import UserInfo from "./UserInfo";
 import { auth } from "../../shared/firebase";
-import { db } from "../../shared/firebase";
 import { signOut } from "firebase/auth";
 import { useCollectionQuery } from "../../hooks/useCollectionQuery";
 import { useStore } from "../../store";
@@ -23,36 +23,42 @@ const SideBar: FC = () => {
     useState(false);
   const [isUserInfoOpened, setIsUserInfoOpened] = useState(false);
 
-  const { data, error, loading } = useCollectionQuery(
-    "conversations",
+  const { data, error, loading, retry } = useCollectionQuery(
+    `conversations-${currentUser?.uid}`,
     query(
-      collection(db, "conversations"),
+      conversationsCollection,
       orderBy("updatedAt", "desc"),
-      where("users", "array-contains", currentUser?.uid)
-    )
+      where("users", "array-contains", currentUser?.uid),
+    ),
   );
 
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
     <>
       <div
-        className={`border-dark-lighten h-screen flex-shrink-0 overflow-y-auto overflow-x-hidden border-r ${
-          location.pathname !== "/"
-            ? "hidden w-[350px] md:!block"
-            : "w-full md:!w-[350px]"
+        className={`h-dvh shrink-0 overflow-x-hidden overflow-y-auto border-r border-dark-lighten ${
+          pathname !== "/"
+            ? "hidden w-[350px] md:block!"
+            : "w-full md:w-[350px]!"
         }`}
       >
-        <div className="border-dark-lighten flex h-20 items-center justify-between border-b px-6">
+        <div className="flex h-20 items-center justify-between border-b border-dark-lighten px-6">
           <Link to="/" className="flex items-center gap-1">
-            <img className="h-8 w-8" src="/icon.svg" alt="" />
+            <img
+              loading="lazy"
+              decoding="async"
+              className="h-8 w-8"
+              src="/icon.svg"
+              alt=""
+            />
             <h1 className="text-xl">FireVerse</h1>
           </Link>
 
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCreateConversationOpened(true)}
-              className="bg-dark-lighten h-8 w-8 rounded-full"
+              className="h-8 w-8 rounded-full bg-dark-lighten"
             >
               <i className="bx bxs-edit text-xl"></i>
             </button>
@@ -60,19 +66,26 @@ const SideBar: FC = () => {
             <ClickAwayListener onClickAway={() => setIsDropdownOpened(false)}>
               {(ref) => (
                 <div ref={ref} className="relative z-10">
-                  <img
+                  <button
+                    aria-label="Profile menu"
+                    aria-expanded={isDropdownOpened}
                     onClick={() => setIsDropdownOpened((prev) => !prev)}
-                    className="h-8 w-8 cursor-pointer rounded-full object-cover"
-                    src={
-                      currentUser?.photoURL
-                        ? IMAGE_PROXY(currentUser.photoURL)
-                        : DEFAULT_AVATAR
-                    }
-                    alt=""
-                  />
+                  >
+                    <img
+                      loading="lazy"
+                      decoding="async"
+                      className="h-8 w-8 cursor-pointer rounded-full object-cover"
+                      src={
+                        currentUser?.photoURL
+                          ? IMAGE_PROXY(currentUser.photoURL)
+                          : DEFAULT_AVATAR
+                      }
+                      alt=""
+                    />
+                  </button>
 
                   <div
-                    className={`border-dark-lighten bg-dark absolute top-full right-0 flex w-max origin-top-right flex-col items-stretch overflow-hidden rounded-md border py-1 shadow-lg transition-all duration-200 ${
+                    className={`absolute top-full right-0 flex w-max origin-top-right flex-col items-stretch overflow-hidden rounded-md border border-dark-lighten bg-dark py-1 shadow-lg transition-all duration-200 ${
                       isDropdownOpened
                         ? "visible scale-100 opacity-100"
                         : "invisible scale-0 opacity-0"
@@ -83,14 +96,14 @@ const SideBar: FC = () => {
                         setIsUserInfoOpened(true);
                         setIsDropdownOpened(false);
                       }}
-                      className="hover:bg-dark-lighten flex items-center gap-1 px-3 py-1 transition duration-300"
+                      className="flex items-center gap-1 px-3 py-1 transition duration-300 hover:bg-dark-lighten"
                     >
                       <i className="bx bxs-user text-xl"></i>
                       <span className="whitespace-nowrap">Profile</span>
                     </button>
                     <button
                       onClick={() => signOut(auth)}
-                      className="hover:bg-dark-lighten flex items-center gap-1 px-3 py-1 transition duration-300"
+                      className="flex items-center gap-1 px-3 py-1 transition duration-300 hover:bg-dark-lighten"
                     >
                       <i className="bx bx-log-out text-xl"></i>
                       <span className="whitespace-nowrap">Sign Out</span>
@@ -108,14 +121,17 @@ const SideBar: FC = () => {
           </div>
         ) : error ? (
           <div className="my-6 flex justify-center">
-            <p className="text-center">Something went wrong</p>
+            <p className="text-center">
+              Unable to load conversations.{" "}
+              <button onClick={retry}>Retry</button>
+            </p>
           </div>
         ) : data?.empty ? (
           <div className="my-6 flex flex-col items-center justify-center">
             <p className="text-center">No conversation found</p>
             <button
               onClick={() => setCreateConversationOpened(true)}
-              className="text-primary text-center"
+              className="text-center text-primary"
             >
               Create one
             </button>
