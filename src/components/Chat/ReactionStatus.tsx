@@ -28,10 +28,10 @@ const ReactionStatus: FC<ReactionStatusProps> = ({ message, position }) => {
         onClick={() => setIsReactionStatusOpened(true)}
         className={`absolute top-full flex -translate-y-1/2 cursor-pointer items-center gap-[2px] rounded-lg border border-dark bg-dark-lighten px-2 text-sm ${
           position === "right"
-            ? "right-8"
+            ? "right-4"
             : position === "left-tab"
-              ? "left-[70px]"
-              : "left-8"
+              ? "left-[54px]"
+              : "left-4"
         }`}
       >
         {Object.entries(
