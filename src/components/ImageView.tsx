@@ -13,14 +13,17 @@ const ImageView: FC<ImageViewProps> = ({ src, isOpened, setIsOpened }) => {
     <Modal
       title="Image"
       onClose={() => setIsOpened(false)}
-      maxWidth="max-w-[90vw]"
+      maxWidth="max-w-[calc(100vw-32px)]"
+      className="w-auto!"
     >
-      <img
-        src={src}
-        alt="Shared image"
-        decoding="async"
-        className="mx-auto max-h-[80dvh] max-w-full object-contain"
-      />
+      <div className="flex items-center justify-center p-4">
+        <img
+          src={src}
+          alt="Shared image"
+          decoding="async"
+          className="block h-auto max-h-[calc(100dvh-144px)] w-auto max-w-[calc(100vw-64px)] object-contain"
+        />
+      </div>
     </Modal>
   );
 };
