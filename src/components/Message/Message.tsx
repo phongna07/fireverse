@@ -78,7 +78,7 @@ const Message: FC<MessageProps> = ({
         />
       )}
       <div
-        className={`-mb-2 flex px-8 ${own ? "justify-end" : isGroup ? "pl-[54px]" : ""}`}
+        className={`-mb-2 flex px-4 ${own ? "justify-end" : isGroup ? "pl-[54px]" : ""}`}
       >
         {!!message.replyTo && (
           <ReplyBadge messageId={message.replyTo as string} />
