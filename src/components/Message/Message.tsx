@@ -78,7 +78,7 @@ const Message: FC<MessageProps> = ({
         />
       )}
       <div
-        className={`-mb-2 flex px-8 ${own ? "justify-end" : isGroup ? "pl-[70px]" : ""}`}
+        className={`-mb-2 flex px-8 ${own ? "justify-end" : isGroup ? "pl-[54px]" : ""}`}
       >
         {!!message.replyTo && (
           <ReplyBadge messageId={message.replyTo as string} />
@@ -90,7 +90,7 @@ const Message: FC<MessageProps> = ({
             setReplyInfo(message);
           }
         }}
-        className={`group relative flex items-stretch gap-2 px-8 ${own ? "flex-row-reverse" : ""} ${
+        className={`group relative flex items-stretch gap-2 px-4 ${own ? "flex-row-reverse" : ""} ${
           Object.keys(message.reactions || {}).length > 0 ? "mb-2" : ""
         }`}
       >
@@ -113,7 +113,7 @@ const Message: FC<MessageProps> = ({
               <div
                 onClick={(e) => e.stopPropagation()}
                 title={formattedDate}
-                className={`max-w-[75%] rounded-lg p-2 break-words text-white ${own ? "relative bg-primary after:absolute after:bottom-[6px] after:left-full after:border-8 after:border-primary after:border-t-transparent after:border-r-transparent" : isGroup ? "bg-dark-lighten" : "relative bg-dark-lighten after:absolute after:right-full after:bottom-[6px] after:border-8 after:border-dark-lighten after:border-t-transparent after:border-l-transparent"}`}
+                className={`max-w-[min(75%,560px)] rounded-[20px] px-3 py-2 break-words text-white ${own ? "bg-primary" : "bg-dark-lighten"}`}
               >
                 {splitLinkFromMessage(message.content).map((item, index) => (
                   <Fragment key={index}>

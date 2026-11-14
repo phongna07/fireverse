@@ -87,15 +87,6 @@ const InputSection: FC<InputSectionProps> = ({
   };
 
   useEffect(() => {
-    const handler = () => {
-      if (!disabled && !document.querySelector("[role=dialog]"))
-        textInputRef.current?.focus();
-    };
-    window.addEventListener("focus", handler);
-    return () => window.removeEventListener("focus", handler);
-  }, [disabled]);
-
-  useEffect(() => {
     textInputRef.current?.focus();
   }, [conversationId]);
 
@@ -389,7 +380,8 @@ const InputSection: FC<InputSectionProps> = ({
         </div>
       )}
       <div
-        className={`flex h-16 items-stretch gap-1 border-t border-dark-lighten px-4 ${
+        aria-busy={fileUploading}
+        className={`composer flex shrink-0 items-center gap-2 px-3 py-4 ${
           disabled ? "pointer-events-none select-none" : ""
         }`}
       >
@@ -398,9 +390,9 @@ const InputSection: FC<InputSectionProps> = ({
           title={
             configs.enableUploads ? "Attach image" : UPLOADS_DISABLED_MESSAGE
           }
-          disabled={!configs.enableUploads || disabled}
+          disabled={!configs.enableUploads || disabled || fileUploading}
           onClick={() => imageInputRef.current?.click()}
-          className="flex shrink-0 items-center text-2xl text-primary"
+          className="icon-button shrink-0 text-2xl text-primary"
         >
           <i className="bx bxs-image-add"></i>
         </button>
@@ -417,9 +409,9 @@ const InputSection: FC<InputSectionProps> = ({
           title={
             configs.enableUploads ? "Attach file" : UPLOADS_DISABLED_MESSAGE
           }
-          disabled={!configs.enableUploads || disabled}
+          disabled={!configs.enableUploads || disabled || fileUploading}
           onClick={() => fileInputRef.current?.click()}
-          className="flex shrink-0 items-center text-2xl text-primary"
+          className="icon-button shrink-0 text-2xl text-primary"
         >
           <i className="bx bx-link-alt"></i>
         </button>
@@ -432,7 +424,13 @@ const InputSection: FC<InputSectionProps> = ({
         />
         <div className="relative flex shrink-0 items-center">
           {isStickerPickerOpened && (
-            <Suspense fallback={<Spin />}>
+            <Suspense
+              fallback={
+                <div className="picker-panel flex items-center justify-center rounded-2xl bg-dark shadow-2xl">
+                  <Spin />
+                </div>
+              }
+            >
               <StickerPicker
                 setIsOpened={setIsStickerPickerOpened}
                 onSelect={sendSticker}
@@ -441,8 +439,14 @@ const InputSection: FC<InputSectionProps> = ({
           )}
 
           <button
-            onClick={() => setIsStickerPickerOpened(true)}
-            className="flex items-center"
+            aria-label="Choose sticker"
+            disabled={disabled || fileUploading}
+            onClick={() => {
+              setIsStickerPickerOpened((open) => !open);
+              setIsGifPickerOpened(false);
+              setIsIconPickerOpened(false);
+            }}
+            className="icon-button"
           >
             <StickerIcon />
           </button>
@@ -450,7 +454,13 @@ const InputSection: FC<InputSectionProps> = ({
 
         <div className="relative flex shrink-0 items-center">
           {isGifPickerOpened && (
-            <Suspense fallback={<Spin />}>
+            <Suspense
+              fallback={
+                <div className="picker-panel flex items-center justify-center rounded-2xl bg-dark shadow-2xl">
+                  <Spin />
+                </div>
+              }
+            >
               <GifPicker
                 setIsOpened={setIsGifPickerOpened}
                 onSelect={sendGif}
@@ -459,8 +469,14 @@ const InputSection: FC<InputSectionProps> = ({
           )}
 
           <button
-            onClick={() => setIsGifPickerOpened(true)}
-            className="flex items-center"
+            aria-label="Choose GIF"
+            disabled={disabled || fileUploading}
+            onClick={() => {
+              setIsGifPickerOpened((open) => !open);
+              setIsStickerPickerOpened(false);
+              setIsIconPickerOpened(false);
+            }}
+            className="icon-button"
           >
             <GifIcon />
           </button>
@@ -468,10 +484,11 @@ const InputSection: FC<InputSectionProps> = ({
 
         <form
           onSubmit={handleFormSubmit}
-          className="flex min-w-0 grow items-stretch gap-1"
+          className="flex min-w-0 grow items-center gap-2"
         >
           <div className="relative flex min-w-0 grow items-center">
             <input
+              aria-label="Message"
               maxLength={1000}
               disabled={disabled}
               ref={textInputRef}
@@ -481,14 +498,20 @@ const InputSection: FC<InputSectionProps> = ({
               }}
               onKeyDown={handleReplaceEmoji}
               onPaste={handlePaste}
-              className="h-9 w-full rounded-full bg-dark-lighten pr-10 pl-3 outline-hidden"
+              className="composer-input h-11 w-full min-w-0 rounded-full bg-dark-lighten pr-12 pl-4 outline-hidden"
               type="text"
-              placeholder="Message..."
+              placeholder="Aa"
             />
             <button
               type="button"
-              onClick={() => setIsIconPickerOpened(true)}
-              className="absolute top-1/2 right-2 -translate-y-1/2"
+              aria-label="Choose emoji"
+              disabled={disabled || fileUploading}
+              onClick={() => {
+                setIsIconPickerOpened((open) => !open);
+                setIsStickerPickerOpened(false);
+                setIsGifPickerOpened(false);
+              }}
+              className="icon-button absolute top-1/2 right-1 -translate-y-1/2"
             >
               <i className="bx bxs-smile text-2xl text-primary"></i>
             </button>
@@ -523,8 +546,11 @@ const InputSection: FC<InputSectionProps> = ({
             </div>
           ) : (
             <button
+              disabled={
+                disabled || (!inputValue.trim() && previewFiles.length === 0)
+              }
               aria-label="Send message"
-              className="flex shrink-0 items-center text-2xl text-primary"
+              className="icon-button shrink-0 text-2xl text-primary"
             >
               <i className="bx bxs-send"></i>
             </button>

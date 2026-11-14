@@ -8,7 +8,7 @@ import ClickAwayListener from "../ClickAwayListener";
 import { ConversationInfo } from "../../shared/types";
 import CreateConversation from "./CreateConversation";
 import SelectConversation from "./SelectConversation";
-import { Spinner as Spin } from "../Loading";
+import Skeleton from "../Skeleton";
 import UserInfo from "./UserInfo";
 import { auth } from "../../shared/firebase";
 import { signOut } from "firebase/auth";
@@ -37,14 +37,14 @@ const SideBar: FC = () => {
   return (
     <>
       <div
-        className={`h-dvh shrink-0 overflow-x-hidden overflow-y-auto border-r border-dark-lighten ${
+        className={`conversation-list shrink-0 overflow-x-hidden overflow-y-auto ${
           pathname !== "/"
             ? "hidden w-[350px] md:block!"
             : "w-full md:w-[350px]!"
         }`}
       >
-        <div className="flex h-20 items-center justify-between border-b border-dark-lighten px-6">
-          <Link to="/" className="flex items-center gap-1">
+        <div className="flex h-20 items-center justify-between gap-3 px-5">
+          <Link to="/" className="flex items-center gap-3">
             <img
               loading="lazy"
               decoding="async"
@@ -52,13 +52,14 @@ const SideBar: FC = () => {
               src="/icon.svg"
               alt=""
             />
-            <h1 className="text-xl">FireVerse</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Chats</h1>
           </Link>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setCreateConversationOpened(true)}
-              className="h-8 w-8 rounded-full bg-dark-lighten"
+              aria-label="New conversation"
+              className="icon-button bg-dark-lighten"
             >
               <i className="bx bxs-edit text-xl"></i>
             </button>
@@ -116,8 +117,24 @@ const SideBar: FC = () => {
         </div>
 
         {loading ? (
-          <div className="my-6 flex justify-center">
-            <Spin />
+          <div
+            className="flex flex-col gap-5 p-5"
+            role="status"
+            aria-label="Loading conversations"
+          >
+            {[0, 1, 2, 3, 4].map((index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3"
+                aria-hidden="true"
+              >
+                <Skeleton className="h-14 w-14 shrink-0 rounded-full" />
+                <div className="flex grow flex-col gap-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : error ? (
           <div className="my-6 flex justify-center">
