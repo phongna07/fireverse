@@ -132,44 +132,46 @@ const ChatView: FC<ChatViewProps> = ({ conversation, setReplyInfo }) => {
           el.scrollTop = el.scrollHeight;
       }}
     >
-      <div ref={sentinel} className="h-px" />
-      {loading && (
-        <div className="flex justify-center py-3">
-          <Spinner />
+      <div className="flex min-h-full flex-col justify-end">
+        <div ref={sentinel} className="h-px" />
+        {loading && (
+          <div className="flex justify-center py-3">
+            <Spinner />
+          </div>
+        )}
+        {error && (
+          <div className="p-4 text-center">
+            Unable to load messages.{" "}
+            <button onClick={retry} className="text-primary">
+              Retry
+            </button>
+          </div>
+        )}
+        {data?.empty && (
+          <p className="p-4 text-center text-gray-400">
+            No messages yet. Start chatting now.
+          </p>
+        )}
+        <div className="flex flex-col items-stretch gap-3 pt-6 pb-2">
+          {messages.map((message, index) => (
+            <Fragment key={message.id}>
+              <Message
+                message={message}
+                side={message.sender === uid ? "right" : "left"}
+                isGroup={conversation.users.length > 2}
+                showAvatar={messages[index - 1]?.sender !== message.sender}
+                setReplyInfo={setReplyInfo}
+              />
+              {seen.has(message.id) && (
+                <div className="flex justify-end gap-px px-8">
+                  {seen.get(message.id)!.map((user) => (
+                    <AvatarFromId key={user} uid={user} size={14} />
+                  ))}
+                </div>
+              )}
+            </Fragment>
+          ))}
         </div>
-      )}
-      {error && (
-        <div className="p-4 text-center">
-          Unable to load messages.{" "}
-          <button onClick={retry} className="text-primary">
-            Retry
-          </button>
-        </div>
-      )}
-      {data?.empty && (
-        <p className="p-4 text-center text-gray-400">
-          No messages yet. Start chatting now.
-        </p>
-      )}
-      <div className="flex flex-col items-stretch gap-3 pt-6 pb-2">
-        {messages.map((message, index) => (
-          <Fragment key={message.id}>
-            <Message
-              message={message}
-              side={message.sender === uid ? "right" : "left"}
-              isGroup={conversation.users.length > 2}
-              showAvatar={messages[index - 1]?.sender !== message.sender}
-              setReplyInfo={setReplyInfo}
-            />
-            {seen.has(message.id) && (
-              <div className="flex justify-end gap-px px-8">
-                {seen.get(message.id)!.map((user) => (
-                  <AvatarFromId key={user} uid={user} size={14} />
-                ))}
-              </div>
-            )}
-          </Fragment>
-        ))}
       </div>
     </div>
   );
