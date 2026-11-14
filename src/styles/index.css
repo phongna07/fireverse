@@ -360,9 +360,14 @@ input:not([type="checkbox"]):not([type="file"]) {
 }
 
 .message-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  min-width: 28px;
-  min-height: 28px;
   transition:
     opacity 140ms ease,
     background-color 140ms ease;
