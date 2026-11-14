@@ -198,7 +198,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
                   </div>
 
                   <i
-                    className={`bx bx-chevron-down text-3xl ${
+                    className={`bx bx-chevron-down text-xl ${
                       isChangeChatNameOpened ? "rotate-180" : ""
                     }`}
                   ></i>
@@ -258,7 +258,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
               </div>
 
               <i
-                className={`bx bx-chevron-down text-3xl ${
+                className={`bx bx-chevron-down text-xl ${
                   isChangeThemeOpened ? "rotate-180" : ""
                 }`}
               ></i>
