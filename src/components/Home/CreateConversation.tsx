@@ -1,5 +1,5 @@
 import Modal from "../Modal";
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { IMAGE_PROXY, THEMES } from "../../shared/constants";
 import {
   addDoc,
@@ -16,6 +16,7 @@ import { useAllUsers } from "../../hooks/useAllUsers";
 import { toast } from "../../store/toast";
 import { useNavigate } from "@tanstack/react-router";
 import { useStore } from "../../store";
+import { indexName, matchesName, normalizeName } from "../../shared/nameSearch";
 
 interface CreateConversationProps {
   setIsOpened: (value: boolean) => void;
@@ -29,6 +30,20 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
   const currentUser = useStore((state) => state.currentUser);
 
   const [selected, setSelected] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+
+  const people = useMemo(
+    () =>
+      (data?.docs ?? [])
+        .map((doc) => doc.data())
+        .filter((user) => user.uid !== currentUser?.uid)
+        .map((user) => ({ user, name: indexName(user.displayName) })),
+    [data, currentUser?.uid],
+  );
+  const normalizedQuery = normalizeName(search);
+  const visiblePeople = people.filter(({ name }) =>
+    matchesName(name, normalizedQuery),
+  );
 
   const navigate = useNavigate();
 
@@ -96,6 +111,29 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
 
   return (
     <Modal title="New conversation" onClose={() => setIsOpened(false)}>
+      <div className="border-b border-dark-lighten px-5 py-3">
+        <div className="input-surface flex items-center gap-2 rounded-lg bg-dark-lighten px-3 py-1">
+          <i className="bx bx-search" aria-hidden="true" />
+          <input
+            type="search"
+            aria-label="Search people by name or initials"
+            placeholder="Search by name or initials"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="grow"
+          />
+          {search && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearch("")}
+              className="flex items-center rounded p-1 hover:brightness-125"
+            >
+              <i className="bx bx-x" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
       {loading ? (
         <div className="flex h-96 items-center justify-center">
           <Spin />
@@ -114,31 +152,47 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
             </div>
           )}
           <div className="flex h-96 flex-col items-stretch gap-2 overflow-y-auto py-2">
-            {data?.docs
-              .filter((doc) => doc.data().uid !== currentUser?.uid)
-              .map((doc) => (
-                <label
-                  key={doc.data().uid}
-                  className="flex cursor-pointer items-center gap-2 px-5 py-2 transition hover:bg-dark-lighten"
-                >
-                  <input
-                    className="shrink-0 cursor-pointer"
-                    type="checkbox"
-                    checked={selected.includes(doc.data().uid)}
-                    onChange={() => handleToggle(doc.data().uid)}
-                  />
-                  <img
-                    loading="lazy"
-                    decoding="async"
-                    className="h-8 w-8 shrink-0 rounded-full object-cover"
-                    src={IMAGE_PROXY(doc.data().photoURL)}
-                    alt=""
-                  />
-                  <p>{doc.data().displayName}</p>
-                </label>
-              ))}
+            {visiblePeople.length === 0 && (
+              <p
+                role="status"
+                className="px-5 py-8 text-center text-sm opacity-70"
+              >
+                {normalizedQuery
+                  ? "No people match your search."
+                  : "No people available."}
+              </p>
+            )}
+            {visiblePeople.map(({ user }) => (
+              <label
+                key={user.uid}
+                className="flex cursor-pointer items-center gap-2 px-5 py-2 transition hover:bg-dark-lighten"
+              >
+                <input
+                  className="shrink-0 cursor-pointer"
+                  type="checkbox"
+                  checked={selected.includes(user.uid)}
+                  onChange={() => handleToggle(user.uid)}
+                />
+                <img
+                  loading="lazy"
+                  decoding="async"
+                  className="h-8 w-8 shrink-0 rounded-full object-cover"
+                  src={IMAGE_PROXY(user.photoURL)}
+                  alt=""
+                />
+                <p>{user.displayName}</p>
+              </label>
+            ))}
           </div>
           <div className="flex justify-end border-t border-dark-lighten p-3">
+            {selected.length > 0 && (
+              <p
+                role="status"
+                className="mr-auto self-center text-sm opacity-70"
+              >
+                {selected.length} selected
+              </p>
+            )}
             <button
               disabled={selected.length === 0}
               onClick={handleCreateConversation}

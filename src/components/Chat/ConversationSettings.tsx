@@ -210,7 +210,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
                         aria-label="Chat name"
                         value={chatNameInputValue}
                         onChange={(e) => setChatNameInputValue(e.target.value)}
-                        className="h-full w-full rounded-lg border border-dark-lighten bg-dark p-2 outline-hidden transition duration-300 focus:border-gray-500"
+                        className="text-field h-full w-full rounded-lg bg-dark p-2"
                         type="text"
                         placeholder="Chat name"
                       />

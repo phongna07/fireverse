@@ -44,7 +44,7 @@ const GifPicker: FC<GifPickerProps> = ({ setIsOpened, onSelect }) => {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="Search GIFs..."
-            className="w-full rounded-full bg-dark-lighten px-4 py-2"
+            className="text-field w-full rounded-full bg-dark-lighten px-4 py-2"
           />
           {loading ? (
             <div className="m-auto">

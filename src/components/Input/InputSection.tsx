@@ -498,7 +498,7 @@ const InputSection: FC<InputSectionProps> = ({
               }}
               onKeyDown={handleReplaceEmoji}
               onPaste={handlePaste}
-              className="composer-input h-11 w-full min-w-0 rounded-full bg-dark-lighten pr-12 pl-4 outline-hidden"
+              className="text-field h-11 w-full min-w-0 rounded-full bg-dark-lighten pr-12 pl-4"
               type="text"
               placeholder="Aa"
             />

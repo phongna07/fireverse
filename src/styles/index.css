@@ -131,10 +131,6 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
-:where(button, a, input, [tabindex]):focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 3px;
-}
 .message-action {
   opacity: 1;
 }
@@ -235,15 +231,42 @@ input::placeholder {
   color: #b0b3b8;
   opacity: 1;
 }
-input:not([type="checkbox"]):not([type="file"]) {
-  min-height: 40px;
-}
 :where(button, a, input, summary, [tabindex]):focus-visible {
   outline: 2px solid #71b7ff;
   outline-offset: 2px;
 }
-.composer-input:focus-visible {
+
+/* A field owns its focus border, either on the input itself or its surface.
+ * Inset outlines follow rounded corners and stay visible in clipped panels. */
+.text-field,
+.input-surface {
+  border: 1px solid rgb(255 255 255 / 12%);
+}
+.text-field {
+  min-height: 40px;
+}
+.text-field:focus,
+.input-surface:focus-within {
+  border-color: #71b7ff;
+  outline: 2px solid #71b7ff;
   outline-offset: -2px;
+}
+.input-surface > input {
+  min-width: 0;
+  min-height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+@media (forced-colors: active) {
+  .text-field:focus,
+  .input-surface:focus-within {
+    border-color: Highlight;
+    outline-color: Highlight;
+  }
 }
 .composer .icon-button svg {
   width: 22px;
@@ -316,9 +339,6 @@ input:not([type="checkbox"]):not([type="file"]) {
 .modal-content form {
   padding: 20px;
   gap: 16px;
-}
-.modal-content input:not([type="checkbox"]):not([type="file"]) {
-  padding: 10px 14px;
 }
 @keyframes spin {
   to {
