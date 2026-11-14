@@ -26,6 +26,8 @@ const SpriteRenderer: FC<HTMLProps<HTMLDivElement> & SpriteRendererProps> = ({
     let disposed = false;
     let frames = 1;
     let frame = 0;
+    let hovered = el.matches(":hover");
+    let focused = el === document.activeElement;
     const stop = () => {
       clearInterval(interval);
       interval = undefined;
@@ -39,30 +41,55 @@ const SpriteRenderer: FC<HTMLProps<HTMLDivElement> & SpriteRendererProps> = ({
         el.style.backgroundPosition = `${-frame * size}px 50%`;
       }, delay);
     };
+    const updatePlayback = () => {
+      if (!runOnHover || hovered || focused) start();
+      else stop();
+    };
+    const mouseEntered = () => {
+      hovered = true;
+      updatePlayback();
+    };
+    const mouseLeft = () => {
+      hovered = false;
+      updatePlayback();
+    };
+    const focusEntered = () => {
+      focused = true;
+      updatePlayback();
+    };
+    const focusLeft = () => {
+      focused = false;
+      updatePlayback();
+    };
     image.onload = () => {
       if (disposed) return;
-      frames = Math.max(1, Math.round(image.width / image.height));
+      frames = Math.max(
+        1,
+        Math.round(image.naturalWidth / image.naturalHeight),
+      );
+      // Use the same frame width for scaling the sheet and advancing it.
+      el.style.backgroundSize = `${frames * size}px ${size}px`;
       setLoaded(true);
-      if (!runOnHover) start();
+      updatePlayback();
     };
     const motionChanged = () => {
       stop();
-      if (!runOnHover) start();
+      updatePlayback();
     };
     image.src = src;
-    el.addEventListener("mouseenter", start);
-    el.addEventListener("mouseleave", stop);
-    el.addEventListener("focus", start);
-    el.addEventListener("blur", stop);
+    el.addEventListener("mouseenter", mouseEntered);
+    el.addEventListener("mouseleave", mouseLeft);
+    el.addEventListener("focus", focusEntered);
+    el.addEventListener("blur", focusLeft);
     reduced.addEventListener("change", motionChanged);
     return () => {
       disposed = true;
       image.onload = null;
       stop();
-      el.removeEventListener("mouseenter", start);
-      el.removeEventListener("mouseleave", stop);
-      el.removeEventListener("focus", start);
-      el.removeEventListener("blur", stop);
+      el.removeEventListener("mouseenter", mouseEntered);
+      el.removeEventListener("mouseleave", mouseLeft);
+      el.removeEventListener("focus", focusEntered);
+      el.removeEventListener("blur", focusLeft);
       reduced.removeEventListener("change", motionChanged);
     };
   }, [src, size, runOnHover, delay]);
@@ -81,9 +108,11 @@ const SpriteRenderer: FC<HTMLProps<HTMLDivElement> & SpriteRendererProps> = ({
       style={{
         width: size,
         height: size,
+        flexShrink: 0,
+        alignSelf: "center",
         opacity: loaded ? 1 : 0,
         backgroundImage: `url(${src})`,
-        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
       }}
       {...others}
     />
