@@ -152,6 +152,9 @@ button:disabled {
   width: min(24rem, calc(100vw - 1rem));
   height: min(24rem, calc(100dvh - 6rem));
 }
+.sticker-panel {
+  width: min(22rem, calc(100vw - 1rem));
+}
 .emoji-panel {
   width: min(348px, calc(100vw - 1rem));
   height: min(435px, calc(100dvh - 6rem));

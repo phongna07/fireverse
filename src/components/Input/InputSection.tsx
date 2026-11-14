@@ -426,7 +426,7 @@ const InputSection: FC<InputSectionProps> = ({
           {isStickerPickerOpened && (
             <Suspense
               fallback={
-                <div className="picker-panel flex items-center justify-center rounded-2xl bg-dark shadow-2xl">
+                <div className="picker-panel sticker-panel flex items-center justify-center rounded-2xl bg-dark shadow-2xl">
                   <Spin />
                 </div>
               }

@@ -47,7 +47,7 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
       {(ref) => (
         <div
           ref={ref}
-          className="picker-panel rounded-lg border-2 border-dark-lighten bg-[#222222] shadow-2xl"
+          className="picker-panel sticker-panel rounded-lg border-2 border-dark-lighten bg-[#222222] shadow-2xl"
         >
           {error ? (
             <p className="p-4 text-center">
@@ -65,7 +65,7 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
                     <h1 className="mt-2" id="sticker-recent">
                       Recent stickers
                     </h1>
-                    <div className="grid w-full grid-cols-5 justify-between">
+                    <div className="grid w-full grid-cols-5 justify-items-center">
                       {recentStickers.map((url) => (
                         <SpriteRenderer
                           key={url}
@@ -89,7 +89,7 @@ const StickerPicker: FC<StickerPickerOpened> = ({ setIsOpened, onSelect }) => {
                     <h1 className="mt-2" id={`sticker-${collection.id}`}>
                       {collection.name}
                     </h1>
-                    <div className="grid w-full grid-cols-5 justify-between">
+                    <div className="grid w-full grid-cols-5 justify-items-center">
                       {collection.stickers.map((sticker) => (
                         <SpriteRenderer
                           key={sticker.spriteURL}
