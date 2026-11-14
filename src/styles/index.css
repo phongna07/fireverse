@@ -153,9 +153,15 @@ button:disabled {
   height: min(24rem, calc(100dvh - 6rem));
 }
 .emoji-panel {
-  height: auto;
-  max-height: calc(100dvh - 6rem);
-  overflow: auto;
+  width: min(348px, calc(100vw - 1rem));
+  height: min(435px, calc(100dvh - 6rem));
+}
+.emoji-panel em-emoji-picker {
+  /* dynamicWidth measures the custom element, whose default is min-content. */
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  --border-radius: 16px;
 }
 @media (min-width: 768px) {
   .picker-panel {
@@ -165,7 +171,6 @@ button:disabled {
   .emoji-panel {
     left: auto;
     right: 1rem;
-    width: min(348px, calc(100vw - 1rem));
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -38,7 +38,7 @@ const EmojiPicker: FC<EmojiPickerProps> = ({ onSelect }) => {
     };
   }, []);
 
-  return <div className="w-full" ref={containerRef} />;
+  return <div className="h-full w-full min-w-0" ref={containerRef} />;
 };
 
 export default EmojiPicker;

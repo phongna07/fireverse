@@ -524,7 +524,7 @@ const InputSection: FC<InputSectionProps> = ({
                   <div ref={ref} className="picker-panel emoji-panel">
                     <Suspense
                       fallback={
-                        <div className="flex h-[357px] w-[348px] items-center justify-center rounded-lg border-2 border-[#555453] bg-[#222222]">
+                        <div className="flex h-full w-full items-center justify-center rounded-2xl bg-dark">
                           <Spin />
                         </div>
                       }
