@@ -46,7 +46,7 @@ const SelectConversation: FC<SelectConversationProps> = ({
       <Link
         to="/$conversationId"
         params={{ conversationId }}
-        className={`relative flex items-stretch gap-2 px-5 py-2 transition duration-300 hover:bg-dark-lighten ${
+        className={`conversation-row relative flex items-center gap-3 rounded-xl p-3 transition duration-150 hover:bg-dark-lighten ${
           conversationId === id ? "bg-[#263342]!" : ""
         }`}
       >
@@ -57,14 +57,14 @@ const SelectConversation: FC<SelectConversationProps> = ({
           src={IMAGE_PROXY(filtered?.[0]?.photoURL)}
           alt=""
         />
-        <div className="flex grow flex-col items-start gap-1 py-1">
-          <p className="max-w-[240px] grow overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="flex min-w-0 grow flex-col items-stretch gap-1 py-1">
+          <p className="min-w-0 grow overflow-hidden text-ellipsis whitespace-nowrap">
             {filtered?.[0]?.displayName}
           </p>
           {lastMessageLoading ? (
             <Skeleton className="w-2/3 grow" />
           ) : (
-            <p className="max-w-[240px] grow overflow-hidden text-sm text-ellipsis whitespace-nowrap text-gray-400">
+            <p className="min-w-0 grow overflow-hidden text-sm text-ellipsis whitespace-nowrap text-gray-400">
               {lastMessage?.message}
             </p>
           )}
@@ -85,8 +85,8 @@ const SelectConversation: FC<SelectConversationProps> = ({
     <Link
       to="/$conversationId"
       params={{ conversationId }}
-      className={`group relative flex items-stretch gap-2 px-5 py-2 transition duration-300 hover:bg-dark-lighten ${
-        conversationId === id ? "bg-[#252F3C]!" : ""
+      className={`group conversation-row relative flex items-center gap-3 rounded-xl p-3 transition duration-150 hover:bg-dark-lighten ${
+        conversationId === id ? "bg-[#202e3b]!" : ""
       }`}
     >
       {conversation?.group?.groupImage ? (
@@ -98,7 +98,7 @@ const SelectConversation: FC<SelectConversationProps> = ({
           alt=""
         />
       ) : (
-        <div className="relative h-14 w-14">
+        <div className="relative h-14 w-14 shrink-0">
           <img
             loading="lazy"
             decoding="async"
@@ -117,8 +117,8 @@ const SelectConversation: FC<SelectConversationProps> = ({
           />
         </div>
       )}
-      <div className="flex grow flex-col items-start gap-1 py-1">
-        <p className="max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap">
+      <div className="flex min-w-0 grow flex-col items-stretch gap-1 py-1">
+        <p className="min-w-0 overflow-hidden font-semibold text-ellipsis whitespace-nowrap">
           {conversation?.group?.groupName ||
             filtered
               ?.map((user) => user.displayName)
@@ -128,7 +128,7 @@ const SelectConversation: FC<SelectConversationProps> = ({
         {lastMessageLoading ? (
           <Skeleton className="w-2/3 grow" />
         ) : (
-          <p className="max-w-[240px] grow overflow-hidden text-sm text-ellipsis whitespace-nowrap text-gray-400">
+          <p className="min-w-0 grow overflow-hidden text-sm text-ellipsis whitespace-nowrap text-gray-400">
             {lastMessage?.message}
           </p>
         )}

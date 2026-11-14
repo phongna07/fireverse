@@ -3,8 +3,8 @@
 @theme {
   --animate-fade-in: fade-in 0.3s forwards;
 
-  --color-dark: #242526;
-  --color-dark-lighten: #3a3b3c;
+  --color-dark: #1f1f1f;
+  --color-dark-lighten: #3a3a3a;
 
   @keyframes fade-in {
     from {
@@ -39,8 +39,14 @@
 }
 
 body {
-  @apply bg-dark text-gray-100;
-  --primary-color: #0d90f3;
+  background: #161616;
+  color: #e4e6eb;
+  font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  --primary-color: #0084ff;
 }
 
 input[type="checkbox"] {
@@ -65,8 +71,8 @@ input[type="checkbox"] {
   @apply bg-transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply rounded-2xl bg-[#666];
-  border: 1px solid #191a1f;
+  @apply rounded-2xl bg-[#4a4a4a];
+  border: 2px solid #1f1f1f;
 }
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-[#777];
@@ -175,4 +181,196 @@ button:disabled {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Shared Messenger-style surfaces and controls. */
+.app-shell {
+  height: 100dvh;
+  padding: 16px;
+  overflow: hidden;
+}
+.conversation-list,
+.chat-panel,
+.settings-sidebar {
+  background: var(--color-dark);
+  border-radius: 16px;
+}
+.conversation-list {
+  min-height: 0;
+}
+.conversation-row {
+  margin: 2px 8px;
+}
+.chat-header {
+  min-height: 76px;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 4%);
+}
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  transition:
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+.icon-button:hover:not(:disabled) {
+  background-color: rgb(255 255 255 / 8%);
+}
+.icon-button:active:not(:disabled) {
+  transform: scale(0.94);
+}
+button {
+  transition:
+    background-color 140ms ease,
+    opacity 140ms ease;
+}
+button:disabled {
+  opacity: 0.4;
+}
+input::placeholder {
+  color: #b0b3b8;
+  opacity: 1;
+}
+input:not([type="checkbox"]):not([type="file"]) {
+  min-height: 40px;
+}
+:where(button, a, input, summary, [tabindex]):focus-visible {
+  outline: 2px solid #71b7ff;
+  outline-offset: 2px;
+}
+.composer-input:focus-visible {
+  outline-offset: -2px;
+}
+.composer .icon-button svg {
+  width: 22px;
+  height: 22px;
+}
+.settings-sidebar {
+  flex: 0 0 304px;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.settings-content {
+  padding: 0 12px 20px;
+}
+.settings-section > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  cursor: pointer;
+  padding: 16px 12px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.settings-section > summary::-webkit-details-marker {
+  display: none;
+}
+.settings-section[open] > summary > i {
+  transform: rotate(180deg);
+}
+.settings-section summary:hover,
+.settings-row:hover:not(:disabled) {
+  background: rgb(255 255 255 / 6%);
+}
+.settings-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: left;
+  font-weight: 600;
+}
+.settings-row > .bx {
+  width: 24px;
+  flex-shrink: 0;
+}
+.settings-row > .bx-chevron-down {
+  margin-left: auto;
+}
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 12px 16px;
+}
+.settings-form input {
+  padding: 12px;
+  background: var(--color-dark-lighten);
+  border-radius: 10px;
+}
+.modal-content form {
+  padding: 20px;
+  gap: 16px;
+}
+.modal-content input:not([type="checkbox"]):not([type="file"]) {
+  padding: 10px 14px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 1199px) {
+  .chat-workspace:has(.settings-sidebar) > .chat-panel {
+    display: none;
+  }
+  .settings-sidebar {
+    flex: 1 1 0;
+    width: 100%;
+  }
+}
+@media (max-width: 767px) {
+  .app-shell {
+    padding: 0;
+    gap: 0;
+  }
+  .conversation-list,
+  .chat-panel,
+  .settings-sidebar {
+    border-radius: 0;
+  }
+  .settings-sidebar {
+    width: 100%;
+  }
+  .composer {
+    gap: 2px;
+    padding: 12px 8px;
+  }
+  .composer .icon-button {
+    width: 32px;
+    height: 36px;
+  }
+  .composer form {
+    gap: 2px;
+  }
+}
+
+.message-action {
+  border-radius: 50%;
+  min-width: 28px;
+  min-height: 28px;
+  transition:
+    opacity 140ms ease,
+    background-color 140ms ease;
+}
+.message-action:hover {
+  background: rgb(255 255 255 / 8%);
+}
+.picker-panel {
+  border-radius: 16px;
+  background: var(--color-dark);
 }

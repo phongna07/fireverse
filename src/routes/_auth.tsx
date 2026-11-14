@@ -3,7 +3,7 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import SideBar from "../components/Home/SideBar";
 
 const AuthLayout = () => (
-  <div className="flex">
+  <div className="app-shell flex gap-3">
     <SideBar />
     <Outlet />
   </div>

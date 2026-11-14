@@ -105,16 +105,16 @@ const Modal: FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative flex max-h-[calc(100dvh-16px)] w-full flex-col overflow-hidden rounded-lg bg-dark outline-hidden ${maxWidth} ${className}`}
+        className={`relative flex max-h-[calc(100dvh-16px)] w-full flex-col overflow-hidden rounded-2xl bg-dark outline-hidden ${maxWidth} ${className}`}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-dark-lighten px-3 py-3">
-          <div className="flex-1"></div>
-          <div className="flex flex-1 items-center justify-center">
-            <h1 id={titleId} className="text-center text-xl sm:text-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-dark-lighten px-5 py-4">
+          <div className="w-9 shrink-0"></div>
+          <div className="flex min-w-0 grow items-center justify-center">
+            <h1 id={titleId} className="text-center text-xl font-bold">
               {title}
             </h1>
           </div>
-          <div className="flex flex-1 items-center justify-end">
+          <div className="flex w-9 shrink-0 items-center justify-end">
             <button
               type="button"
               aria-label="Close"
@@ -126,7 +126,7 @@ const Modal: FC<ModalProps> = ({
           </div>
         </div>
 
-        <div className="min-h-0 overflow-y-auto">{children}</div>
+        <div className="modal-content min-h-0 overflow-y-auto">{children}</div>
       </div>
     </div>,
     document.body,
