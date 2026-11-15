@@ -1,4 +1,11 @@
-import { FC, ReactNode, useEffect, useId, useRef } from "react";
+import {
+  FC,
+  KeyboardEventHandler,
+  ReactNode,
+  useEffect,
+  useId,
+  useRef,
+} from "react";
 
 import { createPortal } from "react-dom";
 
@@ -9,6 +16,8 @@ interface ModalProps {
   /** Tailwind max-width class for the dialog */
   maxWidth?: string;
   className?: string;
+  fullScreen?: boolean;
+  onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
 }
 
 const openDialogs: HTMLElement[] = [];
@@ -20,6 +29,8 @@ const Modal: FC<ModalProps> = ({
   children,
   maxWidth = "max-w-[500px]",
   className = "",
+  fullScreen = false,
+  onKeyDown,
 }) => {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -62,7 +73,10 @@ const Modal: FC<ModalProps> = ({
       const last = focusable[focusable.length - 1];
       const active = document.activeElement;
 
-      if (e.shiftKey && (active === first || active === dialog)) {
+      if (!dialog.contains(active)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && (active === first || active === dialog)) {
         e.preventDefault();
         last.focus();
       } else if (!e.shiftKey && active === last) {
@@ -97,7 +111,7 @@ const Modal: FC<ModalProps> = ({
         if (e.target === e.currentTarget) onClose();
       }}
       onDoubleClick={(e) => e.stopPropagation()}
-      className="fixed inset-0 z-20 flex animate-fade-in items-center justify-center bg-[#00000080] px-2"
+      className={`fixed inset-0 z-20 flex animate-fade-in items-center justify-center ${fullScreen ? "bg-[#242424]" : "bg-[#00000080] px-2"}`}
     >
       <div
         ref={dialogRef}
@@ -105,28 +119,43 @@ const Modal: FC<ModalProps> = ({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`relative flex max-h-[calc(100dvh-16px)] w-full flex-col overflow-hidden rounded-2xl bg-dark outline-hidden ${maxWidth} ${className}`}
+        onKeyDown={onKeyDown}
+        className={`relative flex w-full flex-col overflow-hidden outline-hidden ${fullScreen ? "h-dvh" : `max-h-[calc(100dvh-16px)] rounded-2xl bg-dark ${maxWidth}`} ${className}`}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-dark-lighten px-5 py-4">
-          <div className="w-9 shrink-0"></div>
-          <div className="flex min-w-0 grow items-center justify-center">
-            <h1 id={titleId} className="text-center text-xl font-bold">
-              {title}
-            </h1>
+        {fullScreen ? (
+          <h1 id={titleId} className="sr-only">
+            {title}
+          </h1>
+        ) : (
+          <div className="flex shrink-0 items-center justify-between border-b border-dark-lighten px-5 py-4">
+            <div className="w-9 shrink-0"></div>
+            <div className="flex min-w-0 grow items-center justify-center">
+              <h1 id={titleId} className="text-center text-xl font-bold">
+                {title}
+              </h1>
+            </div>
+            <div className="flex w-9 shrink-0 items-center justify-end">
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-dark-lighten transition duration-300 hover:brightness-125"
+              >
+                <i className="bx bx-x text-2xl"></i>
+              </button>
+            </div>
           </div>
-          <div className="flex w-9 shrink-0 items-center justify-end">
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={onClose}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-dark-lighten transition duration-300 hover:brightness-125"
-            >
-              <i className="bx bx-x text-2xl"></i>
-            </button>
-          </div>
-        </div>
+        )}
 
-        <div className="modal-content min-h-0 overflow-y-auto">{children}</div>
+        <div
+          className={
+            fullScreen
+              ? "min-h-0 flex-1"
+              : "modal-content min-h-0 overflow-y-auto"
+          }
+        >
+          {children}
+        </div>
       </div>
     </div>,
     document.body,
