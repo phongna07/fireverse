@@ -1,3 +1,4 @@
+import { getConversationName } from "../../shared/conversationNames";
 import { FC, useState } from "react";
 
 import { ConversationInfo } from "../../shared/types";
@@ -82,12 +83,7 @@ const ChatHeader: FC<ChatHeaderProps> = ({
             <Skeleton className="h-6 w-1/4" />
           ) : (
             <p className="truncate font-semibold">
-              {conversation.users.length > 2 && conversation?.group?.groupName
-                ? conversation.group.groupName
-                : filtered
-                    ?.map((user) => user.displayName)
-                    .slice(0, 3)
-                    .join(", ")}
+              {getConversationName(conversation, users, currentUser?.uid)}
             </p>
           )}
         </div>

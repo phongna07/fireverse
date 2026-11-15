@@ -1,3 +1,4 @@
+import { getMemberName } from "../../shared/conversationNames";
 import { toast } from "../../store/toast";
 import { ConversationInfo } from "../../shared/types";
 import { FC } from "react";
@@ -58,7 +59,7 @@ const Admin: FC<AdminProps> = ({ conversation }) => {
           />
 
           <div className="grow">
-            <h1>{user.displayName}</h1>
+            <h1>{getMemberName(conversation, user)}</h1>
           </div>
 
           {conversation.group?.admins?.includes(currentUser?.uid as string) &&

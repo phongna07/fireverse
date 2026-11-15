@@ -29,6 +29,9 @@ import { useStore } from "../../store";
 import QuickEmoji from "./QuickEmoji";
 import { Spinner } from "../Loading";
 
+import EditNicknames from "./EditNicknames";
+import { getConversationName } from "../../shared/conversationNames";
+
 const EmojiPicker = lazy(() => import("../Input/EmojiPicker"));
 
 interface ConversationConfigProps {
@@ -42,6 +45,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
 }) => {
   const conversationId = useConversationId();
   const { data: users } = useUsersInfo(conversation.users);
+  const [nicknamesOpened, setNicknamesOpened] = useState(false);
   const [membersOpened, setMembersOpened] = useState(false);
   const [imagesOpened, setImagesOpened] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -196,12 +200,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
           alt=""
         />
         <h3 className="text-lg font-semibold break-words">
-          {conversation.group?.groupName ||
-            users
-              ?.filter((user) => user.uid !== currentUser?.uid)
-              .map((user) => user.displayName)
-              .join(", ") ||
-            "Conversation"}
+          {getConversationName(conversation, users, currentUser?.uid)}
         </h3>
       </div>
       <div className="settings-content">
@@ -273,6 +272,14 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
                 />
               </>
             )}
+            <button
+              aria-haspopup="dialog"
+              onClick={() => setNicknamesOpened(true)}
+              className="settings-row"
+            >
+              <i className="bx bx-edit-alt text-2xl" aria-hidden="true" />
+              <span>Edit nicknames</span>
+            </button>
             <button
               aria-expanded={isChangeThemeOpened}
               onClick={() => setIsChangeThemeOpened((prev) => !prev)}
@@ -362,6 +369,13 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
           </details>
         )}
       </div>
+      {nicknamesOpened && conversationId && (
+        <EditNicknames
+          conversation={conversation}
+          conversationId={conversationId}
+          onClose={() => setNicknamesOpened(false)}
+        />
+      )}
       {isChangeEmojiOpened && (
         <Modal
           title="Change emoji"

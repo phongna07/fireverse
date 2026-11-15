@@ -5,6 +5,7 @@ export interface FirestoreTimestamp {
 
 export interface ConversationInfo {
   users: string[];
+  nicknames?: Record<string, string>;
   group?: {
     admins?: string[];
     groupName?: null | string;

@@ -1,3 +1,4 @@
+import { getMemberName } from "../../shared/conversationNames";
 import ConfirmDialog from "../ConfirmDialog";
 import { ConversationInfo } from "../../shared/types";
 import { FC, useState } from "react";
@@ -100,7 +101,7 @@ const Members: FC<MembersProps> = ({ conversation }) => {
             />
 
             <div className="grow">
-              <h1>{user.displayName}</h1>
+              <h1>{getMemberName(conversation, user)}</h1>
             </div>
 
             {conversation.group?.admins?.includes(

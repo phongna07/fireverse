@@ -1,3 +1,4 @@
+import { getConversationName } from "../../shared/conversationNames";
 import { Link, useParams } from "@tanstack/react-router";
 
 import { ConversationInfo } from "../../shared/types";
@@ -59,7 +60,7 @@ const SelectConversation: FC<SelectConversationProps> = ({
         />
         <div className="flex min-w-0 grow flex-col items-stretch gap-1 py-1">
           <p className="min-w-0 grow overflow-hidden text-ellipsis whitespace-nowrap">
-            {filtered?.[0]?.displayName}
+            {getConversationName(conversation, users, currentUser?.uid)}
           </p>
           {lastMessageLoading ? (
             <Skeleton className="w-2/3 grow" />
@@ -119,11 +120,7 @@ const SelectConversation: FC<SelectConversationProps> = ({
       )}
       <div className="flex min-w-0 grow flex-col items-stretch gap-1 py-1">
         <p className="min-w-0 overflow-hidden font-semibold text-ellipsis whitespace-nowrap">
-          {conversation?.group?.groupName ||
-            filtered
-              ?.map((user) => user.displayName)
-              .slice(0, 3)
-              .join(", ")}
+          {getConversationName(conversation, users, currentUser?.uid)}
         </p>
         {lastMessageLoading ? (
           <Skeleton className="w-2/3 grow" />
