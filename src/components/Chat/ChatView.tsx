@@ -158,7 +158,12 @@ const ChatView: FC<ChatViewProps> = ({ conversation, setReplyInfo }) => {
             <Fragment key={message.id}>
               <Message
                 message={message}
-                side={message.sender === uid ? "right" : "left"}
+                side={
+                  // Call logs belong to the caller, whoever wrote them
+                  (message.call?.callerId ?? message.sender) === uid
+                    ? "right"
+                    : "left"
+                }
                 isGroup={conversation.users.length > 2}
                 showAvatar={messages[index - 1]?.sender !== message.sender}
                 setReplyInfo={setReplyInfo}

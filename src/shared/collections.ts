@@ -1,4 +1,4 @@
-import { ConversationInfo, MessageData, SavedUser } from "./types";
+import { CallData, ConversationInfo, MessageData, SavedUser } from "./types";
 import {
   DocumentData,
   FirestoreDataConverter,
@@ -35,3 +35,14 @@ export const messagesCollection = (conversationId: string) =>
 
 export const messageDoc = (conversationId: string, messageId: string) =>
   doc(messagesCollection(conversationId), messageId);
+
+export const callsCollection = collection(db, "calls").withConverter(
+  converter<CallData>(),
+);
+
+export const callDoc = (callId: string) => doc(callsCollection, callId);
+
+export type CandidateSide = "callerCandidates" | "calleeCandidates";
+
+export const candidatesCollection = (callId: string, side: CandidateSide) =>
+  collection(db, "calls", callId, side);

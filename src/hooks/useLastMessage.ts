@@ -41,7 +41,11 @@ export const useLastMessage = (conversationId: string) =>
                   ? "A sticker"
                   : message.type === "removed"
                     ? "Message removed"
-                    : message.content || "";
+                    : message.type === "call" && message.call
+                      ? message.call.outcome === "missed"
+                        ? `Missed ${message.call.callType} call`
+                        : `${message.call.callType === "video" ? "Video" : "Audio"} call`
+                      : message.content || "";
 
           const formattedDate = formatTimestamp(message.createdAt);
           const maxLength = MAX_LENGTH - formattedDate.length;

@@ -1,11 +1,13 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
+import CallLayer from "../components/Call/CallLayer";
 import SideBar from "../components/Home/SideBar";
 
 const AuthLayout = () => (
   <div className="app-shell flex gap-3">
     <SideBar />
     <Outlet />
+    <CallLayer />
   </div>
 );
 

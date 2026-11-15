@@ -8,6 +8,10 @@ import Skeleton from "../Skeleton";
 import ViewGroup from "../Group/ViewGroup";
 import { useStore } from "../../store";
 import { useUsersInfo } from "../../hooks/useUsersInfo";
+import { useConversationId } from "../../hooks/useConversationId";
+import { useCallStore } from "../../store/call";
+import { startCall } from "../../calls/callManager";
+import { CallType } from "../../shared/types";
 
 interface ChatHeaderProps {
   conversation: ConversationInfo;
@@ -26,6 +30,18 @@ const ChatHeader: FC<ChatHeaderProps> = ({
   const filtered = users?.filter((user) => user.uid !== currentUser?.uid);
 
   const [isGroupMembersOpened, setIsGroupMembersOpened] = useState(false);
+
+  const conversationId = useConversationId();
+  const inCall = useCallStore((state) => state.phase !== "idle");
+  // Calls are 1:1 for now
+  const callPeerId =
+    conversation.users.length === 2
+      ? conversation.users.find((uid) => uid !== currentUser?.uid)
+      : undefined;
+  const call = (type: CallType) => {
+    if (conversationId && callPeerId)
+      void startCall(conversationId, callPeerId, type);
+  };
 
   return (
     <>
@@ -90,6 +106,29 @@ const ChatHeader: FC<ChatHeaderProps> = ({
 
         {!loading && (
           <>
+            {callPeerId && (
+              <>
+                <button
+                  className="icon-button text-primary disabled:opacity-50"
+                  aria-label="Start audio call"
+                  title="Audio call"
+                  disabled={inCall}
+                  onClick={() => call("audio")}
+                >
+                  <i className="bx bxs-phone text-2xl text-primary"></i>
+                </button>
+                <button
+                  className="icon-button text-primary disabled:opacity-50"
+                  aria-label="Start video call"
+                  title="Video call"
+                  disabled={inCall}
+                  onClick={() => call("video")}
+                >
+                  <i className="bx bxs-video text-2xl text-primary"></i>
+                </button>
+              </>
+            )}
+
             {conversation.users.length > 2 && (
               <button
                 className="icon-button text-primary"

@@ -23,6 +23,7 @@ import { db } from "../../shared/firebase";
 import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
 import QuickEmoji from "../Chat/QuickEmoji";
+import CallMessage from "../Call/CallMessage";
 
 interface MessageProps {
   message: MessageItem;
@@ -67,6 +68,21 @@ const Message: FC<MessageProps> = ({
   const formattedDate = formatDate(
     message.createdAt?.seconds ? message.createdAt?.seconds * 1000 : Date.now(),
   );
+
+  if (message.type === "call" && message.call)
+    return (
+      <div id={`message-${message.id}`}>
+        <div
+          className={`flex px-4 ${own ? "justify-end" : isGroup ? "pl-[54px]" : ""}`}
+        >
+          <CallMessage
+            call={message.call}
+            conversationId={conversationId as string}
+            title={formattedDate}
+          />
+        </div>
+      </div>
+    );
 
   return (
     <div id={`message-${message.id}`}>

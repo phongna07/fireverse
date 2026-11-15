@@ -1,0 +1,108 @@
+rules_version = '2';
+
+// Firestore security rules for FireVerse.
+// Publish them in the Firebase console (Firestore → Rules) or with
+// `firebase deploy --only firestore:rules`.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function conversationData(conversationId) {
+      return get(/databases/$(database)/documents/conversations/$(conversationId)).data;
+    }
+
+    function isMember(conversationId) {
+      return signedIn() && request.auth.uid in conversationData(conversationId).users;
+    }
+
+    // ---------- Users ----------
+    match /users/{uid} {
+      // Any signed-in user can look up people (search, add members, avatars)
+      allow read: if signedIn();
+      // Each user writes only their own profile
+      allow create, update: if signedIn() && request.auth.uid == uid;
+    }
+
+    // ---------- Conversations ----------
+    match /conversations/{conversationId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.users;
+
+      // The creator must be one of the members
+      allow create: if signedIn()
+        && request.resource.data.users is list
+        && request.auth.uid in request.resource.data.users;
+
+      // Current members can update (seen, theme, nicknames, group settings,
+      // add/remove members, leave, activeCall). Checked against the state
+      // before the write, so leaving the group still works.
+      allow update: if signedIn() && request.auth.uid in resource.data.users;
+
+      // ---------- Messages ----------
+      match /messages/{messageId} {
+        allow read: if isMember(conversationId);
+
+        // Messages, including call logs, are always written as yourself
+        allow create: if isMember(conversationId)
+          && request.resource.data.sender == request.auth.uid;
+
+        // The sender can edit their message (e.g. remove it); other members
+        // can only change their own reaction
+        allow update: if isMember(conversationId)
+          && (
+            resource.data.sender == request.auth.uid
+            || (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(["reactions"])
+              && request.resource.data.reactions
+                   .diff(resource.data.get("reactions", {}))
+                   .affectedKeys().hasOnly([request.auth.uid])
+            )
+          );
+      }
+    }
+
+    // ---------- Calls ----------
+    match /calls/{callId} {
+      function isParticipant(data) {
+        return signedIn() && request.auth.uid in data.participants;
+      }
+      function callData() {
+        return get(/databases/$(database)/documents/calls/$(callId)).data;
+      }
+
+      allow read: if isParticipant(resource.data);
+
+      allow create: if signedIn()
+        && request.resource.data.callerId == request.auth.uid
+        && request.resource.data.status == "ringing"
+        && request.resource.data.participants.size() == 2
+        && request.resource.data.participants.hasAll([
+             request.resource.data.callerId, request.resource.data.calleeId])
+        && conversationData(request.resource.data.conversationId)
+             .users.hasAll(request.resource.data.participants);
+
+      // Only live calls can change, and only lifecycle fields
+      allow update: if isParticipant(resource.data)
+        && resource.data.status in ["ringing", "accepted"]
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+             "status", "answer", "answeredBy", "answeredAt",
+             "endedAt", "endedBy", "expiresAt"])
+        // Only the callee can answer
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(["answer", "answeredBy"])
+            || request.auth.uid == resource.data.calleeId);
+
+      match /callerCandidates/{candidateId} {
+        allow read: if isParticipant(callData());
+        allow create: if signedIn() && request.auth.uid == callData().callerId;
+      }
+      match /calleeCandidates/{candidateId} {
+        allow read: if isParticipant(callData());
+        allow create: if signedIn() && request.auth.uid == callData().calleeId;
+      }
+    }
+  }
+}

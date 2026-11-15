@@ -43,6 +43,7 @@ Official Website: [https://fireverse.pages.dev](https://fireverse.pages.dev)
   - Change theme
 - View conversation images, files
 - Detect link an add an anchor to it
+- 1:1 audio and video calls in the browser (WebRTC, signaling through Firestore)
 
 ## Installation
 
@@ -89,6 +90,29 @@ This Vite app uploads directly to Cloudinary using an **unsigned upload preset**
 The 2 MB check is a **client-side limit**, not a quota/security boundary. Anyone who learns an unsigned preset can upload outside this app, and uploaded image URLs are public. Configure the format restriction in Cloudinary too, monitor usage, and disable the preset if abused. For restricted upload access, hard server-enforced size limits, or private chat media, use an authenticated backend to validate files and authorize uploads/delivery; keep API secrets there.
 
 Official references: [Find credentials](https://cloudinary.com/documentation/developer_onboarding_faq_find_credentials), [manage upload presets](https://cloudinary.com/documentation/upload_presets), and [client-side uploads](https://cloudinary.com/documentation/client_side_uploading).
+
+## Audio and video calls
+
+1:1 calls use WebRTC for media, which goes directly between the two browsers. Firestore only carries signaling (offer, answer and ICE candidates) and the call lifecycle. No server code or paid Firebase plan is needed.
+
+How it works:
+
+- `calls/{callId}` holds one call (`ringing` → `accepted` → `ended`/`declined`/`missed`/`cancelled`/`busy`/`failed`). ICE candidates go to its `callerCandidates` and `calleeCandidates` subcollections.
+- `conversations/{id}.activeCall` allows one call per conversation at a time. This also handles two people calling each other at the same moment.
+- With no backend, clients enforce timeouts. A call rings for 30 seconds. Active calls refresh `expiresAt`, and a call past it counts as abandoned.
+- A WebRTC data channel carries hang-up and mute/camera state between the two peers. When one side closes its tab, the other side notices within seconds.
+- When a call ends, a `call` message is written to the conversation (missed call, duration). Its id is the call id, so a call is logged once even if both sides end it.
+- Incoming calls ring in every open FireVerse tab. The first tab to answer wins, and the user's other tabs stop ringing. Nothing rings while no FireVerse tab is open.
+
+### NAT traversal
+
+By default, only Google's public STUN servers are used. This works on most home and office networks. Some networks (strict corporate firewalls, some mobile carriers) block direct connections, and the call then ends with "Couldn't connect". To fix that later, add a TURN server through `VITE_ICE_SERVERS` (see `.env.example`). No code changes are needed.
+
+### Firestore rules
+
+The project's security rules are in [`firestore.rules`](./firestore.rules). They cover users, conversations, messages and calls. Paste the file's contents into the Firebase console (**Firestore → Rules**) and publish, or deploy it with the Firebase CLI. Rules are OR'd, so don't keep a catch-all `match /{document=**}` rule alongside them: it would override them.
+
+The incoming-call listener queries `calls` by `participants` (array-contains) and `status`. If Firestore asks for a composite index, open the link in the browser console error to create it.
 
 ## Previews
 

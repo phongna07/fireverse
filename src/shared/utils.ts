@@ -91,6 +91,8 @@ export const describeMessage = (
       return "A file";
     case "sticker":
       return "A sticker";
+    case "call":
+      return "A call";
     default:
       return "Message has been removed";
   }
