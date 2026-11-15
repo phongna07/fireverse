@@ -22,6 +22,7 @@ import SpriteRenderer from "../SpriteRenderer";
 import { db } from "../../shared/firebase";
 import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
+import QuickEmoji from "../Chat/QuickEmoji";
 
 interface MessageProps {
   message: MessageItem;
@@ -102,13 +103,19 @@ const Message: FC<MessageProps> = ({
         )}
         {message.type === "text" ? (
           <>
-            {EMOJI_REGEX.test(message.content) ? (
+            {message.isQuickEmoji || EMOJI_REGEX.test(message.content) ? (
               <div
                 onClick={(e) => e.stopPropagation()}
                 title={formattedDate}
                 className="text-4xl"
+                role={message.isQuickEmoji ? "img" : undefined}
+                aria-label={message.isQuickEmoji ? message.content : undefined}
               >
-                {message.content}
+                {message.isQuickEmoji ? (
+                  <QuickEmoji emoji={message.content} />
+                ) : (
+                  message.content
+                )}
               </div>
             ) : (
               <div

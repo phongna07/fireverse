@@ -2,13 +2,23 @@ import { useUsersInfo } from "../../hooks/useUsersInfo";
 import { IMAGE_PROXY } from "../../shared/constants";
 import ViewGroup from "../Group/ViewGroup";
 import Image from "../Media/Image";
-import { ChangeEvent, FC, FormEvent, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  FC,
+  FormEvent,
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { arrayRemove, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../shared/firebase";
 import configs, { UPLOADS_DISABLED_MESSAGE } from "../../shared/configs";
 import { uploadToStorage } from "../../shared/upload";
 import { IMAGE_ACCEPT, validateImage } from "../../shared/cloudinary";
 import ConfirmDialog from "../ConfirmDialog";
+import Modal from "../Modal";
 import { useNavigate } from "@tanstack/react-router";
 import { useConversationId } from "../../hooks/useConversationId";
 
@@ -16,6 +26,10 @@ import { toast } from "../../store/toast";
 import { ConversationInfo } from "../../shared/types";
 import { THEMES } from "../../shared/constants";
 import { useStore } from "../../store";
+import QuickEmoji from "./QuickEmoji";
+import { Spinner } from "../Loading";
+
+const EmojiPicker = lazy(() => import("../Input/EmojiPicker"));
 
 interface ConversationConfigProps {
   conversation: ConversationInfo;
@@ -56,6 +70,9 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
   );
 
   const [isChangeThemeOpened, setIsChangeThemeOpened] = useState(false);
+  const [isChangeEmojiOpened, setIsChangeEmojiOpened] = useState(false);
+  const [emojiSaving, setEmojiSaving] = useState(false);
+  const emojiSaveInProgress = useRef(false);
 
   const [confirmLeave, setConfirmLeave] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,6 +128,23 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
     }).catch(() =>
       toast.error("Could not change the theme. Please try again."),
     );
+  };
+
+  const changeEmoji = async (emoji: string) => {
+    if (!conversationId || emojiSaveInProgress.current) return;
+    emojiSaveInProgress.current = true;
+    setEmojiSaving(true);
+    try {
+      await updateDoc(doc(db, "conversations", conversationId), {
+        defaultEmoji: emoji,
+      });
+      setIsChangeEmojiOpened(false);
+    } catch {
+      toast.error("Could not change the emoji. Please try again.");
+    } finally {
+      emojiSaveInProgress.current = false;
+      setEmojiSaving(false);
+    }
   };
 
   const leaveGroup = async () => {
@@ -272,6 +306,18 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
                 ))}
               </div>
             )}
+            <button
+              aria-haspopup="dialog"
+              onClick={() => setIsChangeEmojiOpened(true)}
+              className="settings-row"
+            >
+              <span className="flex items-center gap-3">
+                <span className="text-2xl">
+                  <QuickEmoji emoji={conversation.defaultEmoji} />
+                </span>
+                <span>Change emoji</span>
+              </span>
+            </button>
           </div>
         </details>
         <details
@@ -316,6 +362,36 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
           </details>
         )}
       </div>
+      {isChangeEmojiOpened && (
+        <Modal
+          title="Change emoji"
+          onClose={() => setIsChangeEmojiOpened(false)}
+          maxWidth="max-w-[380px]"
+        >
+          <div aria-busy={emojiSaving}>
+            <p className="px-4 py-2 text-sm text-gray-400" role="status">
+              {emojiSaving
+                ? "Saving emoji…"
+                : "Choose the emoji to send when your message is empty."}
+            </p>
+            <div
+              className={`settings-emoji-picker h-[min(435px,calc(100dvh-210px))] w-full min-w-0 ${emojiSaving ? "pointer-events-none opacity-50" : ""}`}
+            >
+              <Suspense
+                fallback={
+                  <div className="flex h-full items-center justify-center">
+                    <Spinner />
+                  </div>
+                }
+              >
+                <EmojiPicker
+                  onSelect={(emoji) => void changeEmoji(emoji.native)}
+                />
+              </Suspense>
+            </div>
+          </div>
+        </Modal>
+      )}
       {membersOpened && (
         <ViewGroup conversation={conversation} setIsOpened={setMembersOpened} />
       )}

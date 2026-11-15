@@ -79,6 +79,7 @@ const Chat: FC<{ id: string }> = ({ id }) => {
             />
             <ChatView setReplyInfo={setReplyInfo} conversation={conversation} />
             <InputSection
+              defaultEmoji={conversation.defaultEmoji}
               replyInfo={replyInfo}
               setReplyInfo={setReplyInfo}
               disabled={false}

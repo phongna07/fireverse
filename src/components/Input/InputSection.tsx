@@ -33,17 +33,20 @@ import StickerIcon from "../Icon/StickerIcon";
 const StickerPicker = lazy(() => import("./StickerPicker"));
 import { useConversationId } from "../../hooks/useConversationId";
 import { useStore } from "../../store";
+import QuickEmoji from "../Chat/QuickEmoji";
 
 const Picker = lazy(() => import("./EmojiPicker"));
 
 interface InputSectionProps {
   disabled: boolean;
+  defaultEmoji?: string;
   replyInfo?: MessageItem | null;
   setReplyInfo?: (value: MessageItem | null) => void;
 }
 
 const InputSection: FC<InputSectionProps> = ({
   disabled,
+  defaultEmoji = "👍",
   replyInfo,
   setReplyInfo,
 }) => {
@@ -95,6 +98,8 @@ const InputSection: FC<InputSectionProps> = ({
     e.preventDefault();
     if (disabled || fileUploading || !currentUser || !conversationId) return;
 
+    const isQuickEmoji = !inputValue.trim() && previewFiles.length === 0;
+
     if (previewFiles.length > 0) {
       for (let i = 0; i < previewFiles.length; i++) {
         const url = previewFiles[i];
@@ -112,11 +117,11 @@ const InputSection: FC<InputSectionProps> = ({
       if (fileUploading) return;
     }
 
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() && !isQuickEmoji) return;
 
     setInputValue("");
 
-    let replacedInputValue = ` ${inputValue} `;
+    let replacedInputValue = isQuickEmoji ? defaultEmoji : ` ${inputValue} `;
 
     Object.entries(EMOJI_REPLACEMENT).map(([key, value]) => {
       value.forEach((item) => {
@@ -134,12 +139,13 @@ const InputSection: FC<InputSectionProps> = ({
         sender: currentUser?.uid,
         content: replacedInputValue.trim(),
         type: "text",
+        isQuickEmoji,
         createdAt: serverTimestamp(),
         replyTo: replyInfo?.id || null,
       },
     ).catch(() => {
       toast.error("Unable to send your message. Please try again.");
-      setInputValue((current) => current || inputValue);
+      if (!isQuickEmoji) setInputValue((current) => current || inputValue);
     });
 
     updateTimestamp();
@@ -544,13 +550,20 @@ const InputSection: FC<InputSectionProps> = ({
             </div>
           ) : (
             <button
-              disabled={
-                disabled || (!inputValue.trim() && previewFiles.length === 0)
+              type="submit"
+              disabled={disabled}
+              aria-label={
+                !inputValue.trim() && previewFiles.length === 0
+                  ? `Send ${defaultEmoji}`
+                  : "Send message"
               }
-              aria-label="Send message"
               className="icon-button shrink-0 text-2xl text-primary"
             >
-              <i className="bx bxs-send"></i>
+              {!inputValue.trim() && previewFiles.length === 0 ? (
+                <QuickEmoji emoji={defaultEmoji} />
+              ) : (
+                <i className="bx bxs-send" aria-hidden="true"></i>
+              )}
             </button>
           )}
         </form>

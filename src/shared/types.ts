@@ -15,6 +15,7 @@ export interface ConversationInfo {
   };
   updatedAt: FirestoreTimestamp | null;
   theme: string;
+  defaultEmoji?: string;
 }
 
 export interface SavedUser {
@@ -30,6 +31,7 @@ export type MessageType = "text" | "image" | "file" | "sticker" | "removed";
 export interface MessageData {
   sender: string;
   content: string;
+  isQuickEmoji?: boolean;
   replyTo?: string | null;
   file?: {
     name: string;
