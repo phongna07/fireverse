@@ -11,7 +11,7 @@ Work is on `modernize`, in three stages: dependency compatibility, TanStack Rout
 - One memoized message component, with reply, reaction, attachment, sticker and removal behavior. Touch/keyboard actions and confirmation dialogs replace hover-only controls and immediate removal.
 - Flex-based chat sizing, IntersectionObserver history loading, retained scroll position, conversation-specific state, and a single seen-avatar lookup per render.
 - Shared modals provide Escape handling, focus trapping/restoration and scroll locking. A root toaster replaces component-specific alerts. Group photo uploads honor the same flag as message uploads.
-- Uploads default to off. Disabled controls explain the limitation; paste/drop display a toast. Firebase Storage is imported only when an enabled upload is attempted.
+- Image uploads use Cloudinary unsigned uploads and turn on when the cloud name and upload preset are configured. JPEG, PNG, WebP, and GIF images have a shared 2 MB client-side limit, including paste/drop and group photos. The general file attachment control is removed.
 - GIF previews use smaller renditions, fetches are cancelled when stale, pickers fit mobile viewports, media images lazy-load, and sprite animation listeners/timers are cleaned up and respect reduced motion.
 - Fixed multiple-link detection, zero-byte file sizes, removed-message reaction shape, reaction ordering, GIF conversation timestamps, group candidate filtering beyond ten members, and theme cleanup on navigation.
 
@@ -38,7 +38,7 @@ xychart-beta
   bar [892.09, 840.41]
 ```
 
-The main chunk falls from about 892 kB to 840 kB. Total emitted JavaScript grows from about 1.582 MB to 1.595 MB as shared UI and additional lazy chunks are added. Emoji data remains a large lazy chunk; Vite still reports the main and emoji chunks above its 500 kB warning threshold. Storage chunks are emitted but not requested while uploads are disabled.
+The main chunk falls from about 892 kB to 840 kB. Total emitted JavaScript grows from about 1.582 MB to 1.595 MB as shared UI and additional lazy chunks are added. Emoji data remains a large lazy chunk; Vite still reports the main and emoji chunks above its 500 kB warning threshold. The bundle figures above predate the Cloudinary migration; Firebase Storage is no longer imported.
 
 ## Dependency limitation
 
@@ -52,7 +52,7 @@ Use your own Google/Facebook sign-in, as agreed. These have not been claimed as 
 2. Create a direct chat and group. Send text, emoji, sticker and GIF; verify ordering, reactions, replies, original-message scrolling, removal confirmations and seen avatars.
 3. Load older history without jumping; switch conversations without stale messages or draft/reply state.
 4. Rename a group, change theme, add/kick members, grant/remove admin, leave with confirmation, and browse media/files. Verify errors show a retry or toast rather than an indefinite spinner.
-5. With uploads off, verify disabled controls and paste/drop notices. Test enabled uploads only with a configured Storage project, including the 20 MB file and 5 MB group-photo limits.
+5. Without Cloudinary configuration, verify disabled image controls and paste/drop notices. With a configured unsigned preset, test image selection, paste/drop, and group photos, including the 2 MB limit and rejection of non-images. See the README for setup.
 6. Check keyboard focus/Escape, touch actions, mobile picker positioning and reduced-motion behavior in a real conversation.
 
 Production hosting must rewrite application URLs to `index.html` for direct links to work.

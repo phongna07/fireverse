@@ -19,6 +19,7 @@ import {
 import { db } from "../../shared/firebase";
 import configs, { UPLOADS_DISABLED_MESSAGE } from "../../shared/configs";
 import { uploadToStorage } from "../../shared/upload";
+import { IMAGE_ACCEPT, validateImage } from "../../shared/cloudinary";
 import { MessageItem } from "../../shared/types";
 
 import { toast } from "../../store/toast";
@@ -49,6 +50,7 @@ const InputSection: FC<InputSectionProps> = ({
   const [inputValue, setInputValue] = useState("");
 
   const [fileUploading, setFileUploading] = useState(false);
+  const uploadInProgressRef = useRef(false);
 
   const [previewFiles, setPreviewFiles] = useState<string[]>([]);
 
@@ -61,7 +63,6 @@ const InputSection: FC<InputSectionProps> = ({
 
   const textInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const previewsRef = useRef(previewFiles);
   useEffect(() => {
@@ -102,9 +103,11 @@ const InputSection: FC<InputSectionProps> = ({
         const file = new File([blob], "image.png", {
           type: res.headers.get("content-type") as string,
         });
-        await uploadFile(file);
+        if (!(await uploadFile(file))) return;
+        setPreviewFiles((current) =>
+          current.filter((preview) => preview !== url),
+        );
       }
-      setPreviewFiles([]);
     } else {
       if (fileUploading) return;
     }
@@ -157,19 +160,20 @@ const InputSection: FC<InputSectionProps> = ({
   };
 
   const uploadFile = async (file: File) => {
+    if (
+      disabled ||
+      !currentUser ||
+      !conversationId ||
+      uploadInProgressRef.current
+    )
+      return false;
     if (!configs.enableUploads) {
       toast.info(UPLOADS_DISABLED_MESSAGE);
       return;
     }
     try {
-      const TWENTY_MB = 1024 * 1024 * 20;
-
-      if (file.size > TWENTY_MB) {
-        toast.info("Max file size is 20MB");
-
-        return;
-      }
-
+      validateImage(file);
+      uploadInProgressRef.current = true;
       setFileUploading(true);
 
       const downloadURL = await uploadToStorage(file);
@@ -179,21 +183,23 @@ const InputSection: FC<InputSectionProps> = ({
         {
           sender: currentUser?.uid,
           content: downloadURL,
-          type: file.type.startsWith("image") ? "image" : "file",
-          file: file.type.startsWith("image")
-            ? null
-            : {
-                name: file.name,
-                size: file.size,
-              },
+          type: "image",
+          file: null,
           createdAt: serverTimestamp(),
         },
       );
 
-      setFileUploading(false);
       updateTimestamp();
+      return true;
     } catch (error) {
-      toast.error("Unable to send the file. Please try again.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to send the image. Please try again.",
+      );
+      return false;
+    } finally {
+      uploadInProgressRef.current = false;
       setFileUploading(false);
     }
   };
@@ -266,9 +272,17 @@ const InputSection: FC<InputSectionProps> = ({
       toast.info(UPLOADS_DISABLED_MESSAGE);
       return;
     }
-    const url = URL.createObjectURL(file);
-
-    setPreviewFiles([...previewFiles, url]);
+    e.preventDefault();
+    if (disabled || fileUploading) return;
+    try {
+      validateImage(file);
+      const url = URL.createObjectURL(file);
+      setPreviewFiles((current) => [...current, url]);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to paste the image.",
+      );
+    }
   };
 
   useEffect(() => {
@@ -291,7 +305,7 @@ const InputSection: FC<InputSectionProps> = ({
 
       setFileDragging(false);
 
-      if (disabled) return;
+      if (disabled || uploadInProgressRef.current) return;
       if (!configs.enableUploads) {
         toast.info(UPLOADS_DISABLED_MESSAGE);
         return;
@@ -311,7 +325,7 @@ const InputSection: FC<InputSectionProps> = ({
       removeEventListener("dragleave", dragBlurHandler);
       removeEventListener("drop", dropFileHandler);
     };
-  }, [conversationId, disabled]);
+  }, [conversationId, disabled, currentUser]);
 
   return (
     <>
@@ -319,7 +333,7 @@ const InputSection: FC<InputSectionProps> = ({
         <div className="pointer-events-none fixed top-0 left-0 z-20 flex h-full w-full items-center justify-center backdrop-blur-xs select-none">
           <h1 className="text-3xl">
             {configs.enableUploads
-              ? "Drop file to send"
+              ? "Drop image to send (max 2 MB)"
               : "Uploads are disabled"}
           </h1>
         </div>
@@ -388,7 +402,9 @@ const InputSection: FC<InputSectionProps> = ({
         <button
           aria-label="Attach image"
           title={
-            configs.enableUploads ? "Attach image" : UPLOADS_DISABLED_MESSAGE
+            configs.enableUploads
+              ? "Attach image (JPEG, PNG, WebP, GIF; max 2 MB)"
+              : UPLOADS_DISABLED_MESSAGE
           }
           disabled={!configs.enableUploads || disabled || fileUploading}
           onClick={() => imageInputRef.current?.click()}
@@ -401,25 +417,7 @@ const InputSection: FC<InputSectionProps> = ({
           hidden
           className="hidden"
           type="file"
-          accept="image/*"
-          onChange={handleFileInputChange}
-        />
-        <button
-          aria-label="Attach file"
-          title={
-            configs.enableUploads ? "Attach file" : UPLOADS_DISABLED_MESSAGE
-          }
-          disabled={!configs.enableUploads || disabled || fileUploading}
-          onClick={() => fileInputRef.current?.click()}
-          className="icon-button shrink-0 text-2xl text-primary"
-        >
-          <i className="bx bx-link-alt"></i>
-        </button>
-        <input
-          ref={fileInputRef}
-          hidden
-          className="hidden"
-          type="file"
+          accept={IMAGE_ACCEPT}
           onChange={handleFileInputChange}
         />
         <div className="relative flex shrink-0 items-center">

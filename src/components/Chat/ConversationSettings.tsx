@@ -6,6 +6,7 @@ import { arrayRemove, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../shared/firebase";
 import configs, { UPLOADS_DISABLED_MESSAGE } from "../../shared/configs";
 import { uploadToStorage } from "../../shared/upload";
+import { IMAGE_ACCEPT, validateImage } from "../../shared/cloudinary";
 import ConfirmDialog from "../ConfirmDialog";
 import { useNavigate } from "@tanstack/react-router";
 import { useConversationId } from "../../hooks/useConversationId";
@@ -83,33 +84,24 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image")) {
-      toast.info("File is not an image");
-
-      return;
-    }
-
-    const FIVE_MB = 1024 * 1024 * 5;
-
-    if (file.size > FIVE_MB) {
-      toast.info("Max image size is 5MB");
-
-      return;
-    }
-
-    setSaving(true);
-
+    e.target.value = "";
+    if (saving) return;
     try {
+      validateImage(file);
+      setSaving(true);
       const downloadURL = await uploadToStorage(file);
 
       await updateDoc(doc(db, "conversations", conversationId as string), {
         "group.groupImage": downloadURL,
       });
-    } catch {
-      toast.error("Could not change the group photo. Please try again.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Could not change the group photo. Please try again.",
+      );
     } finally {
       setSaving(false);
-      e.target.value = "";
     }
   };
 
@@ -227,7 +219,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
                   disabled={!configs.enableUploads || saving}
                   title={
                     configs.enableUploads
-                      ? "Change group photo"
+                      ? "Change group photo (max 2 MB)"
                       : UPLOADS_DISABLED_MESSAGE
                   }
                   onClick={() => fileInputRef.current?.click()}
@@ -242,7 +234,7 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
                   className="hidden"
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT}
                   onChange={handleFileInputChange}
                 />
               </>
