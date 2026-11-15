@@ -119,6 +119,7 @@ const ChatView: FC<ChatViewProps> = ({ conversation, setReplyInfo }) => {
     <div
       ref={container}
       aria-label="Messages"
+      data-message-list
       className="min-h-0 grow overflow-y-auto overscroll-contain [overflow-anchor:none]"
       onScroll={() => {
         const el = container.current;

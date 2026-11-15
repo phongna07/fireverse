@@ -1,7 +1,7 @@
 import AvatarFromId from "../Chat/AvatarFromId";
 import ConfirmDialog from "../ConfirmDialog";
 import { toast } from "../../store/toast";
-import { FC, Fragment, memo, useState } from "react";
+import { FC, Fragment, memo, useRef, useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
 import {
   formatDate,
@@ -41,6 +41,7 @@ const Message: FC<MessageProps> = ({
   const own = side === "right";
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [isSelectReactionOpened, setIsSelectReactionOpened] = useState(false);
+  const reactionButtonRef = useRef<HTMLButtonElement>(null);
 
   const conversationId = useConversationId();
 
@@ -209,13 +210,34 @@ const Message: FC<MessageProps> = ({
 
         {message.type !== "removed" && (
           <>
-            <button
-              aria-label="React to message"
-              onClick={() => setIsSelectReactionOpened(true)}
-              className="message-action text-lg text-gray-500 transition hover:text-gray-300"
-            >
-              <i className="bx bx-smile"></i>
-            </button>
+            <div className="relative flex shrink-0 self-center">
+              <button
+                ref={reactionButtonRef}
+                aria-label="React to message"
+                onClick={() => setIsSelectReactionOpened(true)}
+                className="message-action text-lg text-gray-500 transition hover:text-gray-300"
+              >
+                <i className="bx bx-smile"></i>
+              </button>
+
+              {isSelectReactionOpened && (
+                <ClickAwayListener
+                  onClickAway={() => setIsSelectReactionOpened(false)}
+                >
+                  {(ref) => (
+                    <ReactionPopup
+                      anchorRef={reactionButtonRef}
+                      forwardedRef={ref}
+                      setIsOpened={setIsSelectReactionOpened}
+                      messageId={message.id as string}
+                      currentReaction={
+                        message.reactions?.[currentUser?.uid as string] || 0
+                      }
+                    />
+                  )}
+                </ClickAwayListener>
+              )}
+            </div>
 
             <button
               aria-label="Reply to message"
@@ -239,24 +261,6 @@ const Message: FC<MessageProps> = ({
               >
                 <i className="bx bxs-trash"></i>
               </button>
-            )}
-
-            {isSelectReactionOpened && (
-              <ClickAwayListener
-                onClickAway={() => setIsSelectReactionOpened(false)}
-              >
-                {(ref) => (
-                  <ReactionPopup
-                    position={own ? "right" : "left"}
-                    forwardedRef={ref}
-                    setIsOpened={setIsSelectReactionOpened}
-                    messageId={message.id as string}
-                    currentReaction={
-                      message.reactions?.[currentUser?.uid as string] || 0
-                    }
-                  />
-                )}
-              </ClickAwayListener>
             )}
 
             {Object.keys(message.reactions || {}).length > 0 && (
