@@ -1,7 +1,6 @@
 import { FC, useEffect, useState } from "react";
 
 import ConversationSettings from "../../components/Chat/ConversationSettings";
-import ViewMedia from "../../components/Media/ViewMedia";
 import Skeleton from "../../components/Skeleton";
 import ChatHeader from "../../components/Chat/ChatHeader";
 import ChatView from "../../components/Chat/ChatView";
@@ -25,7 +24,6 @@ const Chat: FC<{ id: string }> = ({ id }) => {
   const [settingsOpened, setSettingsOpened] = useState(
     () => window.matchMedia("(min-width: 1200px)").matches,
   );
-  const [mediaOpened, setMediaOpened] = useState(false);
   const [replyInfo, setReplyInfo] = useState<MessageItem | null>(null);
 
   useEffect(() => {
@@ -96,10 +94,8 @@ const Chat: FC<{ id: string }> = ({ id }) => {
           <ConversationSettings
             conversation={conversation}
             setIsOpened={setSettingsOpened}
-            setMediaViewOpened={setMediaOpened}
           />
         )}
-      {mediaOpened && <ViewMedia setIsOpened={setMediaOpened} />}
     </div>
   );
 };

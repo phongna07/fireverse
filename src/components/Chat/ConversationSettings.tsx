@@ -1,6 +1,7 @@
 import { useUsersInfo } from "../../hooks/useUsersInfo";
 import { IMAGE_PROXY } from "../../shared/constants";
 import ViewGroup from "../Group/ViewGroup";
+import Image from "../Media/Image";
 import { ChangeEvent, FC, FormEvent, useEffect, useRef, useState } from "react";
 import { arrayRemove, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../shared/firebase";
@@ -19,17 +20,16 @@ import { useStore } from "../../store";
 interface ConversationConfigProps {
   conversation: ConversationInfo;
   setIsOpened: (value: boolean) => void;
-  setMediaViewOpened: (value: boolean) => void;
 }
 
 const ConversationSettings: FC<ConversationConfigProps> = ({
   conversation,
   setIsOpened,
-  setMediaViewOpened,
 }) => {
   const conversationId = useConversationId();
   const { data: users } = useUsersInfo(conversation.users);
   const [membersOpened, setMembersOpened] = useState(false);
+  const [imagesOpened, setImagesOpened] = useState(false);
   const [saving, setSaving] = useState(false);
   const closeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -274,21 +274,19 @@ const ConversationSettings: FC<ConversationConfigProps> = ({
             )}
           </div>
         </details>
-        <details className="settings-section">
+        <details
+          className="settings-section"
+          onToggle={(event) => setImagesOpened(event.currentTarget.open)}
+        >
           <summary>
-            Media & files
-            <i className="bx bx-chevron-down text-xl" />
+            <span className="flex items-center gap-3">
+              <i className="bx bx-images text-2xl" aria-hidden="true" />
+              View images
+            </span>
+            <i className="bx bx-chevron-down text-xl" aria-hidden="true" />
           </summary>
           <div className="settings-section-body">
-            <button
-              onClick={() => {
-                setMediaViewOpened(true);
-              }}
-              className="settings-row"
-            >
-              <i className="bx bxs-file text-2xl"></i>
-              <span>View images & files</span>
-            </button>
+            {imagesOpened && <Image />}
           </div>
         </details>
         {conversation.users.length > 2 && (

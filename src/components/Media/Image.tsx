@@ -1,6 +1,6 @@
 import { messagesCollection } from "../../shared/collections";
-import { FC, useState } from "react";
-import { orderBy, query, where } from "firebase/firestore";
+import { FC, useMemo, useState } from "react";
+import { query, where } from "firebase/firestore";
 
 import ImageView from "../ImageView";
 import { Spinner as Spin } from "../Loading";
@@ -14,13 +14,13 @@ const ImageItem: FC<{ src: string }> = ({ src }) => {
     <>
       <button
         aria-label="View image"
+        className="aspect-square w-full overflow-hidden rounded-lg"
         onClick={() => setIsImageViewOpened(true)}
       >
         <img
           loading="lazy"
           decoding="async"
-          onClick={() => setIsImageViewOpened(true)}
-          className="h-[100px] w-[100px] cursor-pointer object-cover transition duration-300 hover:brightness-75"
+          className="h-full w-full cursor-pointer object-cover transition duration-300 hover:brightness-75"
           src={src}
           alt=""
         />
@@ -38,39 +38,63 @@ const Image: FC = () => {
   const conversationId = useConversationId();
 
   const { data, loading, error, retry } = useCollectionQuery(
-    `images-${conversationId}`,
+    `images-by-type-${conversationId}`,
     query(
       messagesCollection(conversationId as string),
       where("type", "==", "image"),
-      orderBy("createdAt", "desc"),
     ),
+  );
+
+  // Keep the server query on a single field so no composite index is needed.
+  const images = useMemo(
+    () =>
+      data?.docs
+        .map((image) => ({ id: image.id, ...image.data() }))
+        .sort((a, b) => {
+          // Pending server timestamps belong with the newest images.
+          if (!a.createdAt && b.createdAt) return -1;
+          if (a.createdAt && !b.createdAt) return 1;
+          return (
+            (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0) ||
+            (b.createdAt?.nanoseconds ?? 0) - (a.createdAt?.nanoseconds ?? 0) ||
+            b.id.localeCompare(a.id)
+          );
+        }) ?? [],
+    [data],
   );
 
   if (error)
     return (
-      <p className="p-4 text-center">
-        Unable to load images. <button onClick={retry}>Retry</button>
+      <p role="alert" className="p-4 text-center">
+        Unable to load images.{" "}
+        <button className="underline" onClick={retry}>
+          Retry
+        </button>
       </p>
     );
 
   if (loading)
     return (
-      <div className="flex h-80 items-center justify-center">
+      <div
+        role="status"
+        aria-label="Loading images"
+        className="flex h-32 items-center justify-center"
+      >
         <Spin />
       </div>
     );
 
   if (data?.empty)
     return (
-      <div className="h-80 py-3">
-        <p className="text-center">No image found</p>
+      <div className="px-3 py-6">
+        <p className="text-center">No images found</p>
       </div>
     );
 
   return (
-    <div className="flex h-80 flex-wrap content-start gap-4 overflow-x-hidden overflow-y-auto p-4">
-      {data?.docs.map((image) => (
-        <ImageItem key={image.id} src={image.data().content} />
+    <div className="grid max-h-80 grid-cols-3 gap-2 overflow-y-auto p-3">
+      {images.map((image) => (
+        <ImageItem key={image.id} src={image.content} />
       ))}
     </div>
   );
