@@ -120,7 +120,7 @@ const CreateConversation: FC<CreateConversationProps> = ({ setIsOpened }) => {
             placeholder="Search by name or initials"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            className="grow"
+            className="grow [&::-webkit-search-cancel-button]:hidden"
           />
           {search && (
             <button
